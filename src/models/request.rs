@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 /// Example JSON:
 /// {
 ///     "request": {
@@ -10,22 +12,28 @@
 ///     }
 /// }
 
+#[derive(Serialize, Deserialize)]
 pub struct Request {
     pub request_type: RequestType,
     pub url: String,
     pub body: Body
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Body {
     pub format: BodyFormat,
     pub payload: String
 }
 
+
+#[derive(Serialize, Deserialize)]
 pub enum RequestType {
     Get,
     Post
 }
 
+
+#[derive(Serialize, Deserialize)]
 pub enum BodyFormat {
     Json,
     XWwwFormUrlEncoded

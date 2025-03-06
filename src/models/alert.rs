@@ -8,13 +8,16 @@
   
 use super::request::Request;
 use super::metrics::MetricType;
+use serde::{Serialize, Deserialize};
 
+#[derive(Serialize, Deserialize)]
 pub struct Alert {
     pub metric_id: MetricType,
     pub logic: Logic,
     pub value: String,
     pub request: Request
 }
+
 
 impl Alert {
     pub fn new(metric_id: MetricType, logic: Logic, value: String, request: Request) -> Alert {
@@ -27,6 +30,7 @@ impl Alert {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum Logic {
     Eq,
     Gt,

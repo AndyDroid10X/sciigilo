@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use serde::{Deserialize, Serialize};
 
 
 // **Memory Metrics**
@@ -6,6 +7,8 @@ use std::fmt::Display;
 //   - Available RAM
 //   - Used RAM
 //   - Swap usage
+
+#[derive(Serialize, Deserialize)]
 pub struct MemoryMetrics {
     pub total: u64,
     pub free: u64,

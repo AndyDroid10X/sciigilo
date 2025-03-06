@@ -1,9 +1,11 @@
 use std::fmt::Display;
+use serde::{Deserialize, Serialize};
 
 // **Disk Metrics**
 //   - Overall disk (or partition?) usage
 //   - Available space
 
+#[derive(Serialize, Deserialize)]
 pub struct DiskMetrics {
     pub total: u64,
     pub used: u64,
