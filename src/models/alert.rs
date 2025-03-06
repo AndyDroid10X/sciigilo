@@ -5,19 +5,18 @@
 // | `alerts[].logic`                 | `"eq" \| "gt" \| "lt" \| "gte" \| "lte"`    | Logical comparison operator for the alert condition. |
 // | `alerts[].value`                 | Number                                   | Threshold value for triggering an alert. |
 // | `alerts[].request`               | Object                                   | HTTP request details for triggered alerts. |
-  
-use super::request::Request;
+
 use super::metrics::MetricType;
-use serde::{Serialize, Deserialize};
+use super::request::Request;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Alert {
     pub metric_id: MetricType,
     pub logic: Logic,
     pub value: String,
-    pub request: Request
+    pub request: Request,
 }
-
 
 impl Alert {
     pub fn new(metric_id: MetricType, logic: Logic, value: String, request: Request) -> Alert {
@@ -25,7 +24,7 @@ impl Alert {
             metric_id,
             logic,
             value,
-            request
+            request,
         }
     }
 }
@@ -36,5 +35,5 @@ pub enum Logic {
     Gt,
     Lt,
     Gte,
-    Lte
+    Lte,
 }

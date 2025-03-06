@@ -1,5 +1,5 @@
-use std::fmt::Display;
 use serde::{Deserialize, Serialize};
+use std::fmt::Display;
 
 // **Disk Metrics**
 //   - Overall disk (or partition?) usage
@@ -14,6 +14,10 @@ pub struct DiskMetrics {
 
 impl Display for DiskMetrics {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f ,"Disk metrics: total: {}, used: {}, free {}", self.total, self.used, self.free)
+        write!(
+            f,
+            "Disk metrics: total: {}, used: {}, free {}",
+            self.total, self.used, self.free
+        )
     }
 }

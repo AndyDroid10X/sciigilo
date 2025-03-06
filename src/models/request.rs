@@ -16,27 +16,25 @@ use serde::{Deserialize, Serialize};
 pub struct Request {
     pub request_type: RequestType,
     pub url: String,
-    pub body: Body
+    pub body: Body,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Body {
     pub format: BodyFormat,
-    pub payload: String
+    pub payload: String,
 }
-
 
 #[derive(Serialize, Deserialize)]
 pub enum RequestType {
     Get,
-    Post
+    Post,
 }
-
 
 #[derive(Serialize, Deserialize)]
 pub enum BodyFormat {
     Json,
-    XWwwFormUrlEncoded
+    XWwwFormUrlEncoded,
 }
 
 impl Request {
@@ -44,17 +42,14 @@ impl Request {
         Request {
             request_type,
             url,
-            body
+            body,
         }
     }
 }
 
 impl Body {
     pub fn new(format: BodyFormat, payload: String) -> Body {
-        Body {
-            format,
-            payload
-        }
+        Body { format, payload }
     }
 }
 
@@ -63,7 +58,7 @@ impl RequestType {
         match request_type {
             "GET" => RequestType::Get,
             "POST" => RequestType::Post,
-            _ => RequestType::Get
+            _ => RequestType::Get,
         }
     }
 }

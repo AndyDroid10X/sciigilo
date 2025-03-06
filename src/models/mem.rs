@@ -1,6 +1,5 @@
-use std::fmt::Display;
 use serde::{Deserialize, Serialize};
-
+use std::fmt::Display;
 
 // **Memory Metrics**
 //   - Total RAM
@@ -17,7 +16,7 @@ pub struct MemoryMetrics {
     pub swap_total: u64,
     pub swap_free: u64,
     pub swap_used: u64,
-    pub swap_usage_percentage: f32
+    pub swap_usage_percentage: f32,
 }
 
 impl MemoryMetrics {
@@ -34,7 +33,7 @@ impl MemoryMetrics {
             swap_total,
             swap_free,
             swap_used,
-            swap_usage_percentage
+            swap_usage_percentage,
         }
     }
 }

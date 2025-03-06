@@ -1,6 +1,5 @@
-use std::fmt::Display;
 use serde::{Deserialize, Serialize};
-
+use std::fmt::Display;
 
 // **CPU Metrics**
 //   - Usage percentage per core
@@ -9,15 +8,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct CpuMetrics {
     pub usage_percentage: f32,
-    pub load_average: [f32; 3]
+    pub load_average: [f32; 3],
 }
-
 
 impl CpuMetrics {
     pub fn new(usage_percentage: f32, load_average: [f32; 3]) -> CpuMetrics {
         CpuMetrics {
             usage_percentage,
-            load_average
+            load_average,
         }
     }
 }
