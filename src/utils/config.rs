@@ -33,7 +33,7 @@ pub fn read_config(config: &mut Config) {
     load_env();
 
     let db_path = env::var("SC_DB_PATH").unwrap_or_else(|_| "metrics.db".to_string());
-    let port = env::var("PORT")
+    let port = env::var("SC_PORT")
         .ok()
         .and_then(|val| val.parse().ok())
         .unwrap_or(3000);
