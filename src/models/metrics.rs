@@ -1,9 +1,9 @@
+use super::{cpu, disk, mem};
 use serde::{Deserialize, Serialize};
-// use super::{mem, cpu, disk};
 
 #[derive(Serialize, Deserialize)]
 pub enum MetricType {
-    Cpu,
-    Memory,
-    Disk,
+    Cpu(cpu::CpuMetrics),
+    Memory(mem::MemoryMetrics),
+    Disk(disk::DiskMetrics),
 }
