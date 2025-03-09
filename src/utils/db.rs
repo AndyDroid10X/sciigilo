@@ -116,7 +116,7 @@ async fn insert_disk_metrics(
 ) -> Result<(), sqlx::Error> {
     sqlx::query(
         r#"
-        INSERT INTO DiskMetrics (disk_usage_percentage, available_space)
+        INSERT INTO DiskMetrics (available_space, total_space)
         VALUES (?, ?, ?)
         "#,
     )
