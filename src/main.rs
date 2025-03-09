@@ -1,4 +1,4 @@
-use axum::{Router, response::Html, routing::get};
+use axum::{Json, Router, routing::get};
 use sysinfo::System;
 use tokio::net::TcpListener;
 mod models;
@@ -33,12 +33,16 @@ async fn main() {
 
     let app = Router::new()
         .route(
-            "/check",
+            "/health",
             get(|| async {
-                Html(format!(
-                    "{} is OK",
-                    System::name().unwrap_or_else(|| "System".into())
-                ))
+                Json(
+                        format!(
+                            "{{\"status\": \"ok\", \"version\": \"{}\", \"hostname\": \"{}\", \"uptime\": {}}}",
+                            env!("CARGO_PKG_VERSION"),
+                            System::host_name().unwrap_or("unknown".to_string()),
+                            System::uptime()
+                        )
+                )
             }),
         )
         .nest("/metrics", routes::metrics::get_routes())
