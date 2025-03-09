@@ -131,7 +131,7 @@ pub async fn get_metric(pool: &SqlitePool, metric_type: MetricType) -> MetricTyp
     match metric_type {
         MetricType::Cpu(_) => get_cpu_metric(pool).await.unwrap_or(metric_type),
         MetricType::Memory(_) => get_memory_metric(pool).await.unwrap_or(metric_type),
-        MetricType::Disk(_) => get_disk_metric(pool).await.unwrap(),
+        MetricType::Disk(_) => get_disk_metric(pool).await.unwrap_or(metric_type),
     }
 }
 
