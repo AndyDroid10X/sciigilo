@@ -7,9 +7,22 @@ use std::fmt::Display;
 
 #[derive(Serialize, Deserialize)]
 pub struct DiskMetrics {
-    pub total: u64,
-    pub used: u64,
-    pub free: u64,
+    pub total: u32,
+    pub used: u32,
+    pub free: u32,
+    pub usage_percentage: f32,
+}
+
+impl DiskMetrics {
+    pub fn new(total: u32, used: u32, free: u32) -> DiskMetrics {
+        let usage_percentage = used as f32 / total as f32;
+        DiskMetrics {
+            total,
+            used,
+            free,
+            usage_percentage,
+        }
+    }
 }
 
 impl Display for DiskMetrics {

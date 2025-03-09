@@ -7,20 +7,20 @@ use std::fmt::Display;
 //   - Used RAM
 //   - Swap usage
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct MemoryMetrics {
-    pub total: u64,
-    pub free: u64,
-    pub used: u64,
+    pub total: u32,
+    pub free: u32,
+    pub used: u32,
     pub usage_percentage: f32,
-    pub swap_total: u64,
-    pub swap_free: u64,
-    pub swap_used: u64,
+    pub swap_total: u32,
+    pub swap_free: u32,
+    pub swap_used: u32,
     pub swap_usage_percentage: f32,
 }
 
 impl MemoryMetrics {
-    pub fn new(total: u64, used: u64, swap_total: u64, swap_used: u64) -> MemoryMetrics {
+    pub fn new(total: u32, used: u32, swap_total: u32, swap_used: u32) -> MemoryMetrics {
         let free = total - used;
         let usage_percentage = used as f32 / total as f32;
         let swap_free = swap_total - swap_used;
