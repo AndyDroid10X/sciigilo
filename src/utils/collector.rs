@@ -103,11 +103,9 @@ impl MetricsCollector {
         };
 
         disk.refresh();
-
         Ok(disk::DiskMetrics::new(
             (disk.total_space() / 1048576) as u32,
-            ((disk.total_space() - disk.available_space()) / 1048576) as u32,
-            (disk.available_space() / 1048576) as u32,
+            ((disk.total_space() - disk.available_space()) / 1048576) as u32
         ))
     }
 }
