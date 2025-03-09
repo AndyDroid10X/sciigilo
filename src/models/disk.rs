@@ -5,7 +5,7 @@ use std::fmt::Display;
 //   - Overall disk (or partition?) usage
 //   - Available space
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct DiskMetrics {
     pub total: u32,
     pub used: u32,
