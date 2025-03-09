@@ -14,9 +14,9 @@ pub struct DiskMetrics {
 }
 
 impl DiskMetrics {
-    pub fn new(total: u32, used: u32) -> DiskMetrics {
+    pub fn new(total: u32, free: u32) -> DiskMetrics {
+        let used = if total > free { total - free } else { 0 };
         let usage_percentage = used as f32 / total as f32;
-        let free = total - used;
         DiskMetrics {
             total,
             used,

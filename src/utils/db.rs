@@ -116,11 +116,11 @@ async fn insert_disk_metrics(
 ) -> Result<(), sqlx::Error> {
     sqlx::query(
         r#"
-        INSERT INTO DiskMetrics (available_space, total_space)
-        VALUES (?, ?, ?)
+        INSERT INTO DiskMetrics (total_space, available_space)
+        VALUES (?, ?)
         "#,
     )
-    .bind(disk_metrics.usage_percentage)
+    .bind(disk_metrics.total)
     .bind(disk_metrics.free)
     .execute(pool)
     .await
@@ -131,7 +131,7 @@ pub async fn get_metric(pool: &SqlitePool, metric_type: MetricType) -> MetricTyp
     match metric_type {
         MetricType::Cpu(_) => get_cpu_metric(pool).await.unwrap_or(metric_type),
         MetricType::Memory(_) => get_memory_metric(pool).await.unwrap_or(metric_type),
-        MetricType::Disk(_) => get_disk_metric(pool).await.unwrap_or(metric_type),
+        MetricType::Disk(_) => get_disk_metric(pool).await.unwrap(),
     }
 }
 
@@ -180,7 +180,7 @@ async fn get_memory_metric(pool: &SqlitePool) -> Result<MetricType, sqlx::Error>
 async fn get_disk_metric(pool: &SqlitePool) -> Result<MetricType, sqlx::Error> {
     let row = sqlx::query(
         r#"
-        SELECT disk_usage_percentage, available_space, total_space
+        SELECT available_space, total_space
         FROM DiskMetrics
         ORDER BY timestamp DESC
         LIMIT 1
