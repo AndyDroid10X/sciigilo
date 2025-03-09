@@ -61,7 +61,6 @@ fn get_init_query() -> &'static str {
 
     CREATE TABLE IF NOT EXISTS DiskMetrics (
         timestamp DATETIME PRIMARY KEY DEFAULT CURRENT_TIMESTAMP,
-        disk_usage_percentage REAL NOT NULL,
         available_space INTEGER NOT NULL,
         total_space INTEGER NOT NULL
     );
@@ -194,7 +193,6 @@ async fn get_disk_metric(pool: &SqlitePool) -> Result<MetricType, sqlx::Error> {
     Ok(MetricType::Disk(DiskMetrics::new(
         row.get::<i64, _>("total_space") as u32,
         row.get::<i64, _>("available_space") as u32,
-        row.get("disk_usage_percentage"),
     )))
 }
 
