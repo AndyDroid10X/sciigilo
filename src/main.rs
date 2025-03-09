@@ -48,7 +48,7 @@ async fn main() {
         .nest("/metrics", routes::metrics::get_routes())
         .with_state(pool);
 
-    let listener = TcpListener::bind(("127.0.0.1", app_config.port))
+    let listener = TcpListener::bind(("0.0.0.0", app_config.port))
         .await
         .unwrap();
 
