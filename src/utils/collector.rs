@@ -26,9 +26,15 @@ impl MetricsCollector {
         let memory_metrics = self.get_memory_metrics().await.unwrap_or_default();
         let disk_metrics = self.get_disk_metrics().await.unwrap_or_default();
 
-        db::insert_metrics(&self.pool, MetricType::Cpu(cpu_metrics)).await;
-        db::insert_metrics(&self.pool, MetricType::Memory(memory_metrics)).await;
-        db::insert_metrics(&self.pool, MetricType::Disk(disk_metrics)).await;
+        if let Err(e) = db::insert_metrics(&self.pool, MetricType::Cpu(cpu_metrics)).await {
+            eprintln!("Failed to insert CPU metrics: {:?}", e);
+        }
+        if let Err(e) = db::insert_metrics(&self.pool, MetricType::Memory(memory_metrics)).await {
+            eprintln!("Failed to insert memory metrics: {:?}", e);
+        };
+        if let Err(e) = db::insert_metrics(&self.pool, MetricType::Disk(disk_metrics)).await {
+            eprintln!("Failed to insert disk metrics: {:?}", e);
+        };
     }
 
     async fn get_cpu_metrics(&mut self) -> Result<cpu::CpuMetrics, String> {
