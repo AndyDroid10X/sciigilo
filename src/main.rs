@@ -10,7 +10,28 @@ async fn main() {
     let mut app_config = config::Config::new();
     config::read_config(&mut app_config);
 
-    let route_healthcheck = Router::new().route(
+    let pool = match db::connect(app_config.db_file_path.as_str()).await {
+        Ok(pool) => pool,
+        Err(e) => {
+            eprintln!("Failed to connect to database: {:?}", e);
+            return;
+        }
+    };
+
+    db::init_db(&pool).await;
+
+    let collector_pool = pool.clone();
+
+    tokio::spawn(async move {
+        let mut collector = utils::collector::MetricsCollector::new(collector_pool);
+        loop {
+            collector.collect_metrics().await;
+            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+        }
+    });
+
+    let app = Router::new()
+        .route(
         "/check",
         get(|| async {
             Html(format!(
