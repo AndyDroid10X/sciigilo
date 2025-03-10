@@ -5,7 +5,7 @@ use std::fmt::Display;
 //   - Overall disk (or partition?) usage
 //   - Available space
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, PartialEq, Clone)]
 pub struct DiskMetrics {
     pub total: u32,
     pub used: u32,
@@ -16,7 +16,7 @@ pub struct DiskMetrics {
 impl DiskMetrics {
     pub fn new(total: u32, free: u32) -> DiskMetrics {
         let used = if total > free { total - free } else { 0 };
-        let usage_percentage = used as f32 / total as f32;
+        let usage_percentage = if total > 0 {used as f32 / total as f32} else {0.0};
         DiskMetrics {
             total,
             used,

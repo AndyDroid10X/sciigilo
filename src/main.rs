@@ -8,8 +8,10 @@ mod routes;
 
 #[tokio::main]
 async fn main() {
-    let mut app_config = config::Config::new();
-    config::read_config(&mut app_config);
+    let mut app_config = config::EnvConfig::new();
+    let mut alerts_config = config::AlertConfig::new();
+    alerts_config.read_config().await;
+    app_config.read_config();
 
     let pool = match db::connect(app_config.db_file_path.as_str()).await {
         Ok(pool) => pool,

@@ -10,7 +10,7 @@ use super::metrics::MetricType;
 use super::request::Request;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub struct Alert {
     pub metric_id: MetricType,
     pub logic: Logic,
@@ -29,7 +29,7 @@ impl Alert {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub enum Logic {
     Eq,
     Gt,
