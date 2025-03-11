@@ -22,9 +22,17 @@ pub struct MemoryMetrics {
 impl MemoryMetrics {
     pub fn new(total: u32, used: u32, swap_total: u32, swap_used: u32) -> MemoryMetrics {
         let free = total - used;
-        let usage_percentage = if total > 0 {used as f32 / total as f32} else {0.0};
+        let usage_percentage = if total > 0 {
+            used as f32 / total as f32
+        } else {
+            0.0
+        };
         let swap_free = swap_total - swap_used;
-        let swap_usage_percentage = if swap_total > 0 {swap_used as f32 / swap_total as f32} else {0.0};
+        let swap_usage_percentage = if swap_total > 0 {
+            swap_used as f32 / swap_total as f32
+        } else {
+            0.0
+        };
         MemoryMetrics {
             total,
             free,
