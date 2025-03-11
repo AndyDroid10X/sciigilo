@@ -48,7 +48,9 @@ async fn main() {
             }),
         )
         .nest("/metrics", routes::metrics::get_routes())
-        .with_state(pool);
+        .with_state(pool)
+        .nest("/alerts", routes::alerts::get_routes())
+        .with_state(alerts_config);
 
     let listener = TcpListener::bind(("0.0.0.0", app_config.port))
         .await
