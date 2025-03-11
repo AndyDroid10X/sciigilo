@@ -12,29 +12,35 @@ use serde::{Deserialize, Serialize};
 ///     }
 /// }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct Request {
     pub request_type: RequestType,
     pub url: String,
     pub body: Body,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct Body {
     pub format: BodyFormat,
     pub payload: String,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub enum RequestType {
     Get,
     Post,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub enum BodyFormat {
     Json,
     XWwwFormUrlEncoded,
+}
+
+impl Default for Body {
+    fn default() -> Self {
+        Body::new(BodyFormat::Json, String::new())
+    }
 }
 
 impl Request {

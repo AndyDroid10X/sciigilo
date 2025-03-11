@@ -6,21 +6,30 @@
 // | `alerts[].value`                 | Number                                   | Threshold value for triggering an alert. |
 // | `alerts[].request`               | Object                                   | HTTP request details for triggered alerts. |
 
-use super::metrics::MetricType;
 use super::request::Request;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct Alert {
-    pub metric_id: MetricType,
+    #[serde(default = "uuid::Uuid::new_v4")]
+    pub id: Uuid,
+    pub metric_id: String,
     pub logic: Logic,
     pub value: String,
     pub request: Request,
 }
 
 impl Alert {
-    pub fn new(metric_id: MetricType, logic: Logic, value: String, request: Request) -> Alert {
+    pub fn new(
+        id: Uuid,
+        metric_id: String,
+        logic: Logic,
+        value: String,
+        request: Request,
+    ) -> Alert {
         Alert {
+            id,
             metric_id,
             logic,
             value,
@@ -29,7 +38,7 @@ impl Alert {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub enum Logic {
     Eq,
     Gt,
