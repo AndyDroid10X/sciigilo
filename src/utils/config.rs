@@ -98,4 +98,13 @@ impl AlertConfig {
             eprintln!("Failed to save alerts: {}", e);
         });
     }
+
+    pub async fn update_alert(&mut self, alert: Alert) {
+        self.read_config().await;
+        self.alerts.retain(|a| a.id != alert.id);
+        self.alerts.push(alert);
+        self.save().await.unwrap_or_else(|e| {
+            eprintln!("Failed to save alerts: {}", e);
+        });
+    }
 }

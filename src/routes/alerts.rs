@@ -22,9 +22,18 @@ async fn delete_alert(
     Json(Ok(format!("Success")))
 }
 
+async fn update_alert(
+    State(mut config): State<AlertConfig>,
+    Json(alert_data): Json<Alert>,
+) -> Json<Result<String, String>> {
+    config.update_alert(alert_data).await;
+    Json(Ok("Success".to_string()))
+}
+
 pub fn get_routes() -> Router<AlertConfig> {
     Router::new()
         .route("/get", get(get_alerts))
         .route("/create", post(create_alert))
         .route("/delete/{uuid}", get(delete_alert))
+        .route("/update", post(update_alert))
 }
