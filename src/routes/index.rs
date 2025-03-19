@@ -1,5 +1,5 @@
 use askama::Template;
-use axum::{extract::Request, response::Html, routing::get, Router};
+use axum::{Router, extract::Request, response::Html, routing::get};
 
 use crate::utils::config;
 
@@ -11,7 +11,7 @@ struct IndexTemplate {
 
 async fn index(request: Request) -> Html<String> {
     let mut app_config = config::EnvConfig::new();
-    
+
     app_config.read_config();
 
     let mut host = String::from("localhost");
@@ -20,9 +20,7 @@ async fn index(request: Request) -> Html<String> {
         host = String::from(request.headers().get("host").unwrap().to_str().unwrap());
     }
 
-    let template = IndexTemplate {
-        url: host,
-    };
+    let template = IndexTemplate { url: host };
     Html(template.render().unwrap())
 }
 
