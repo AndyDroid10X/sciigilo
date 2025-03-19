@@ -1,3 +1,4 @@
+use crate::models::metrics;
 use crate::{models::alert::Alert, utils::config::AlertConfig};
 use axum::routing::post;
 use axum::{Router, extract::State, response::Json, routing::get};
@@ -30,10 +31,15 @@ async fn update_alert(
     Json(Ok("Success".to_string()))
 }
 
+pub async fn get_fields(State(_config): State<AlertConfig>) -> Json<Result<Vec<String>, String>> {
+    Json(Ok(metrics::get_metrics_fields()))
+}
+
 pub fn get_routes() -> Router<AlertConfig> {
     Router::new()
         .route("/get", get(get_alerts))
         .route("/create", post(create_alert))
         .route("/delete/{uuid}", get(delete_alert))
         .route("/update", post(update_alert))
+        .route("/fields", get(get_fields))
 }

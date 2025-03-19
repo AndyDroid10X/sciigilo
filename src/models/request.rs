@@ -20,7 +20,6 @@ pub struct Request {
     pub body: Body,
 }
 
-#[serde(rename_all = "lowercase")]
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 #[serde(rename_all = "lowercase")]
 pub struct Body {

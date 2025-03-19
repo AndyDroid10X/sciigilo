@@ -8,3 +8,11 @@ pub enum MetricType {
     Memory(mem::MemoryMetrics),
     Disk(disk::DiskMetrics),
 }
+
+pub fn get_metrics_fields() -> Vec<String> {
+    let mut fields = Vec::new();
+    fields.extend(cpu::Fields::get_values());
+    fields.extend(mem::Fields::get_values());
+    fields.extend(disk::Fields::get_values());
+    fields
+}

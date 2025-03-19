@@ -12,6 +12,24 @@ pub struct CpuMetrics {
     pub load_average: [f32; 3],
 }
 
+pub enum Fields {
+    UsagePercentage,
+    LoadAverage1m,
+    LoadAverage5m,
+    LoadAverage15m,
+}
+
+impl Fields {
+    pub fn get_values() -> Vec<String> {
+        vec![
+            "usage_percentage".to_string(),
+            "load_average_1m".to_string(),
+            "load_average_5m".to_string(),
+            "load_average_15m".to_string(),
+        ]
+    }
+}
+
 impl CpuMetrics {
     pub fn new(usage_percentage: f32, load_average: [f32; 3]) -> CpuMetrics {
         CpuMetrics {
