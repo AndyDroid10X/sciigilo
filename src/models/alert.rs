@@ -10,7 +10,8 @@ use super::request::Request;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, Default)]
+#[serde(rename_all = "lowercase")]
 pub struct Alert {
     #[serde(default = "uuid::Uuid::new_v4")]
     pub id: Uuid,
@@ -38,8 +39,9 @@ impl Alert {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, Default)]
 pub enum Logic {
+    #[default]
     Eq,
     Gt,
     Lt,

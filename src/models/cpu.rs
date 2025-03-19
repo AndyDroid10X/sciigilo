@@ -6,6 +6,7 @@ use std::fmt::Display;
 //   - Load average (1min, 5min, 15min)
 
 #[derive(Serialize, Deserialize, Default, PartialEq, Clone)]
+#[serde(rename_all = "lowercase")]
 pub struct CpuMetrics {
     pub usage_percentage: f32,
     pub load_average: [f32; 3],

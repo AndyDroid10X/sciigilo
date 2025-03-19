@@ -6,6 +6,7 @@ use std::fmt::Display;
 //   - Available space
 
 #[derive(Serialize, Deserialize, Default, PartialEq, Clone)]
+#[serde(rename_all = "lowercase")]
 pub struct DiskMetrics {
     pub total: u32,
     pub used: u32,

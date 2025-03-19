@@ -12,26 +12,32 @@ use serde::{Deserialize, Serialize};
 ///     }
 /// }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, Default)]
+#[serde(rename_all = "lowercase")]
 pub struct Request {
     pub request_type: RequestType,
     pub url: String,
     pub body: Body,
 }
 
+#[serde(rename_all = "lowercase")]
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[serde(rename_all = "lowercase")]
 pub struct Body {
     pub format: BodyFormat,
     pub payload: String,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, Default)]
+#[serde(rename_all = "lowercase")]
 pub enum RequestType {
+    #[default]
     Get,
     Post,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[serde(rename_all = "lowercase")]
 pub enum BodyFormat {
     Json,
     XWwwFormUrlEncoded,

@@ -8,6 +8,7 @@ use std::fmt::Display;
 //   - Swap usage
 
 #[derive(Serialize, Deserialize, Default, PartialEq, Clone)]
+#[serde(rename_all = "lowercase")]
 pub struct MemoryMetrics {
     pub total: u32,
     pub free: u32,
