@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Monitoring</title>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            margin: 0;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .tab.active {
+            border-bottom: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .card {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .card-icon {
+            margin-right: 0.5rem;
+            width: 24px;
+            height: 24px;
+        }
+        
+        .card-content {
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+        
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .metric-item:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            font-weight: 500;
+        }
+        
+        .metric-value {
+            font-family: monospace;
+            color: var(--secondary-color);
+        }
+        
+        .not-implemented {
+            text-align: center;
+            padding: 4rem 0;
+            color: #888;
+            font-style: italic;
+        }
+        
+        .loading {
+            opacity: 0.6;
+        }
+        
+        .error {
+            color: #dc3545;
+            font-size: 0.9rem;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>System Monitor</h1>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="metrics">Metrics</div>
+            <div class="tab" data-tab="alerts">Alerts</div>
+        </div>
+        
+        <div id="metrics-tab" class="tab-content active">
+            <div class="metrics-grid">
+                <div class="card">
+                    <div class="card-title">
+                        <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 20V10"></path>
+                            <path d="M12 20V4"></path>
+                            <path d="M6 20v-6"></path>
+                        </svg>
+                        CPU
+                    </div>
+                    <div id="cpu" class="card-content">
+                        <div class="metric-item">
+                            <div class="metric-label">Usage</div>
+                            <div class="metric-value" id="cpu-usage">Loading...</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Load (1m)</div>
+                            <div class="metric-value" id="cpu-load-1">Loading...</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Load (5m)</div>
+                            <div class="metric-value" id="cpu-load-5">Loading...</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Load (15m)</div>
+                            <div class="metric-value" id="cpu-load-15">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">
+                        <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                            <path d="M6 12h12"></path>
+                            <path d="M8 8h.01"></path>
+                            <path d="M8 16h.01"></path>
+                        </svg>
+                        Memory
+                    </div>
+                    <div id="memory" class="card-content">
+                        <div class="metric-item">
+                            <div class="metric-label">Total</div>
+                            <div class="metric-value" id="memory-total">Loading...</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Used</div>
+                            <div class="metric-value" id="memory-used">Loading...</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Free</div>
+                            <div class="metric-value" id="memory-free">Loading...</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Usage</div>
+                            <div class="metric-value" id="memory-usage">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">
+                        <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 6v6l4 2"></path>
+                        </svg>
+                        Disk
+                    </div>
+                    <div id="disk" class="card-content">
+                        <div class="metric-item">
+                            <div class="metric-label">Total</div>
+                            <div class="metric-value" id="disk-total">Loading...</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Used</div>
+                            <div class="metric-value" id="disk-used">Loading...</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Free</div>
+                            <div class="metric-value" id="disk-free">Loading...</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Usage</div>
+                            <div class="metric-value" id="disk-usage">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="alerts-tab" class="tab-content">
+            <div class="not-implemented">Alerts functionality not yet implemented</div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = 'http://{{ url }}';
+        
+        function setTabActive(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+        
+        async function fetchMetric(metric) {
+            const elements = {
+                cpu: {
+                    usage: document.getElementById('cpu-usage'),
+                    load1: document.getElementById('cpu-load-1'),
+                    load5: document.getElementById('cpu-load-5'),
+                    load15: document.getElementById('cpu-load-15')
+                },
+                memory: {
+                    total: document.getElementById('memory-total'),
+                    used: document.getElementById('memory-used'),
+                    free: document.getElementById('memory-free'),
+                    usage: document.getElementById('memory-usage')
+                },
+                disk: {
+                    total: document.getElementById('disk-total'),
+                    used: document.getElementById('disk-used'),
+                    free: document.getElementById('disk-free'),
+                    usage: document.getElementById('disk-usage')
+                }
+            };
+            
+            try {
+                const response = await fetch(`${baseUrl}/metrics/${metric}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const metricData = data[metric] || data[metric.charAt(0).toUpperCase() + metric.slice(1)];
+                
+                if (!metricData) {
+                    throw new Error(`No ${metric} data found in response`);
+                }
+                
+                switch (metric) {
+                    case 'cpu':
+                        elements.cpu.usage.textContent = `${metricData.usage_percentage.toFixed(1)}%`;
+                        elements.cpu.load1.textContent = metricData.load_average[0].toFixed(2);
+                        elements.cpu.load5.textContent = metricData.load_average[1].toFixed(2);
+                        elements.cpu.load15.textContent = metricData.load_average[2].toFixed(2);
+                        break;
+                    case 'memory':
+                        elements.memory.total.textContent = formatBytes(metricData.total);
+                        elements.memory.used.textContent = formatBytes(metricData.used);
+                        elements.memory.free.textContent = formatBytes(metricData.free);
+                        elements.memory.usage.textContent = `${metricData.usage_percentage.toFixed(1)}%`;
+                        break;
+                    case 'disk':
+                        elements.disk.total.textContent = formatBytes(metricData.total);
+                        elements.disk.used.textContent = formatBytes(metricData.used);
+                        elements.disk.free.textContent = formatBytes(metricData.free);
+                        elements.disk.usage.textContent = `${metricData.usage_percentage.toFixed(1)}%`;
+                        break;
+                }
+            } catch (error) {
+                const cardContent = document.getElementById(metric).querySelectorAll('.metric-value');
+                cardContent.forEach(el => {
+                    el.innerHTML = `<span class="error">Failed to load</span>`;
+                });
+                console.error(`Error fetching ${metric}:`, error);
+            }
+        }
+        
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            
+            
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+        async function updateAllMetrics() {
+            await Promise.all([
+                fetchMetric('cpu'),
+                fetchMetric('memory'),
+                fetchMetric('disk')
+            ]);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAllMetrics();
+            setInterval(updateAllMetrics, 5000);
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    setTabActive(tab.getAttribute('data-tab'));
+                });
+            });
+        });
+    </script>
+</body>
+</html>

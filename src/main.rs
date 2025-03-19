@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 use axum::{Json, Router, routing::get};
 use sysinfo::System;
 use tokio::net::TcpListener;
@@ -50,7 +52,8 @@ async fn main() {
         .nest("/metrics", routes::metrics::get_routes())
         .with_state(pool)
         .nest("/alerts", routes::alerts::get_routes())
-        .with_state(alerts_config);
+        .with_state(alerts_config)
+        .merge(routes::index::get_routes());
 
     let listener = TcpListener::bind(("0.0.0.0", app_config.port))
         .await
