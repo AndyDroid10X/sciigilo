@@ -14,22 +14,13 @@ pub struct DiskMetrics {
     pub usage_percentage: f32,
 }
 
-pub enum Fields {
-    Total,
-    Used,
-    Free,
-    UsagePercentage,
-}
-
-impl Fields {
-    pub fn get_values() -> Vec<String> {
-        vec![
-            "total".to_string(),
-            "used".to_string(),
-            "free".to_string(),
-            "usage_percentage".to_string(),
-        ]
-    }
+pub fn get_values() -> Vec<String> {
+    vec![
+        "total".to_string(),
+        "used".to_string(),
+        "free".to_string(),
+        "usage_percentage".to_string(),
+    ]
 }
 
 impl DiskMetrics {

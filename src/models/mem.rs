@@ -20,30 +20,17 @@ pub struct MemoryMetrics {
     pub swap_usage_percentage: f32,
 }
 
-pub enum Fields {
-    Total,
-    Free,
-    Used,
-    UsagePercentage,
-    SwapTotal,
-    SwapFree,
-    SwapUsed,
-    SwapUsagePercentage,
-}
-
-impl Fields {
-    pub fn get_values() -> Vec<String> {
-        vec![
-            "total".to_string(),
-            "free".to_string(),
-            "used".to_string(),
-            "usage_percentage".to_string(),
-            "swap_total".to_string(),
-            "swap_free".to_string(),
-            "swap_used".to_string(),
-            "swap_usage_percentage".to_string(),
-        ]
-    }
+pub fn get_values() -> Vec<String> {
+    vec![
+        "total".to_string(),
+        "free".to_string(),
+        "used".to_string(),
+        "usage_percentage".to_string(),
+        "swap_total".to_string(),
+        "swap_free".to_string(),
+        "swap_used".to_string(),
+        "swap_usage_percentage".to_string(),
+    ]
 }
 
 impl MemoryMetrics {

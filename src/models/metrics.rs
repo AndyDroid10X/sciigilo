@@ -11,8 +11,20 @@ pub enum MetricType {
 
 pub fn get_metrics_fields() -> Vec<String> {
     let mut fields = Vec::new();
-    fields.extend(cpu::Fields::get_values());
-    fields.extend(mem::Fields::get_values());
-    fields.extend(disk::Fields::get_values());
+    fields.extend(
+        cpu::get_values()
+            .iter()
+            .map(|field| format!("cpu_{}", field)),
+    );
+    fields.extend(
+        mem::get_values()
+            .iter()
+            .map(|field| format!("mem_{}", field)),
+    );
+    fields.extend(
+        disk::get_values()
+            .iter()
+            .map(|field| format!("disk_{}", field)),
+    );
     fields
 }
