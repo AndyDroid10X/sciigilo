@@ -48,28 +48,8 @@ impl Default for Body {
     }
 }
 
-impl Request {
-    pub fn new(request_type: RequestType, url: String, body: Body) -> Request {
-        Request {
-            request_type,
-            url,
-            body,
-        }
-    }
-}
-
 impl Body {
     pub fn new(format: BodyFormat, payload: String) -> Body {
         Body { format, payload }
-    }
-}
-
-impl RequestType {
-    pub fn from_str(request_type: &str) -> RequestType {
-        match request_type {
-            "GET" => RequestType::Get,
-            "POST" => RequestType::Post,
-            _ => RequestType::Get,
-        }
     }
 }

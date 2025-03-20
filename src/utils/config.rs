@@ -1,5 +1,4 @@
 use crate::models::alert::Alert;
-use serde::{Deserialize, Serialize};
 use std::env;
 use tokio::{
     fs::{self, File},
@@ -93,7 +92,17 @@ impl AlertConfig {
 
     pub async fn remove_alert(&mut self, uuid: &str) {
         self.read_config().await;
+        if self
+            .alerts
+            .iter()
+            .map(|a| a.id.to_string())
+            .any(|id| id == uuid)
+        {
+            eprintln!("Alert with id {} not found", uuid);
+            return;
+        }
         self.alerts.retain(|a| a.id.to_string() != uuid);
+
         self.save().await.unwrap_or_else(|e| {
             eprintln!("Failed to save alerts: {}", e);
         });

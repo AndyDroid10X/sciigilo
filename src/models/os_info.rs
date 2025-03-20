@@ -9,24 +9,6 @@ pub struct OsInfo {
     pub os_arch: String,
 }
 
-impl OsInfo {
-    pub fn new(
-        hostname: String,
-        uptime: u64,
-        os_type: String,
-        os_version: String,
-        os_arch: String,
-    ) -> OsInfo {
-        OsInfo {
-            hostname,
-            uptime,
-            os_type,
-            os_version,
-            os_arch,
-        }
-    }
-}
-
 impl Display for OsInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

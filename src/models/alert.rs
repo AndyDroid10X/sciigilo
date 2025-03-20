@@ -21,24 +21,6 @@ pub struct Alert {
     pub request: Request,
 }
 
-impl Alert {
-    pub fn new(
-        id: Uuid,
-        metric_id: String,
-        logic: Logic,
-        value: String,
-        request: Request,
-    ) -> Alert {
-        Alert {
-            id,
-            metric_id,
-            logic,
-            value,
-            request,
-        }
-    }
-}
-
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, Default)]
 pub enum Logic {
     #[default]
