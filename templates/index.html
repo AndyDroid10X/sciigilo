@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>System Monitoring</title>
+    <title>Sciigilo — System Monitoring</title>
     <style>
         :root {
             --primary-color: #4361ee;
@@ -37,7 +37,7 @@
         
         h1 {
             margin: 0;
-            font-weight: 500;
+            font-weight: 700;
             color: var(--primary-color);
         }
         
@@ -342,7 +342,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>System Monitor</h1>
+            <h1>Sciigilo</h1>
         </header>
         
         <div class="tabs">
@@ -457,7 +457,7 @@
                     <span class="close-modal">&times;</span>
                     <h3 id="modal-title">Add New Alert</h3>
                     <form id="alert-form">
-                        <input type="hidden" id="alert-uuid" name="uuid">
+                        <input type="hidden" id="alert-id" name="id">
                         <div class="form-group">
                             <label for="metric-select">Metric:</label>
                             <select id="metric-select" required>
@@ -481,8 +481,8 @@
                         <div class="form-group">
                             <label for="request-type">Action Type:</label>
                             <select id="request-type">
-                                <option value="Post">HTTP POST</option>
-                                <option value="Get">HTTP GET</option>
+                                <option value="post">HTTP POST</option>
+                                <option value="get">HTTP GET</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -630,7 +630,7 @@
             
             addAlertBtn.addEventListener('click', () => {
                 document.getElementById('modal-title').textContent = 'Add New Alert';
-                document.getElementById('alert-uuid').value = '';
+                document.getElementById('alert-id').value = '';
                 alertForm.reset();
                 modal.style.display = 'block';
             });
@@ -666,11 +666,11 @@
                     }
                 };
                 
-                const alertId = document.getElementById('alert-uuid').value;
+                const alertId = document.getElementById('alert-id').value;
                 
                 try {
                     if (alertId) {
-                        alertData.uuid = alertId;
+                        alertData.id = alertId;
                         await updateAlert(alertData);
                     } else {
                         await createAlert(alertData);
@@ -753,13 +753,13 @@
                             <div class="alert-action">Action: ${requestInfo}</div>
                         </div>
                         <div class="alert-controls">
-                            <button class="alert-btn edit-alert" data-id="${alert.uuid}" title="Edit Alert">
+                            <button class="alert-btn edit-alert" data-id="${alert.id}" title="Edit Alert">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                 </svg>
                             </button>
-                            <button class="alert-btn delete-alert" data-id="${alert.uuid}" title="Delete Alert">
+                            <button class="alert-btn delete-alert" data-id="${alert.id}" title="Delete Alert">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M3 6h18"></path>
                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
@@ -777,7 +777,7 @@
                     
                     alertCard.querySelector('.delete-alert').addEventListener('click', () => {
                         if (confirm('Are you sure you want to delete this alert?')) {
-                            deleteAlert(alert.uuid);
+                            deleteAlert(alert.id);
                         }
                     });
                 });
@@ -802,7 +802,7 @@
             const modal = document.getElementById('alert-modal');
             document.getElementById('modal-title').textContent = 'Edit Alert';
             
-            document.getElementById('alert-uuid').value = alert.uuid;
+            document.getElementById('alert-id').value = alert.id;
             document.getElementById('metric-select').value = alert.metric_id;
             document.getElementById('logic-select').value = alert.logic;
             document.getElementById('threshold-value').value = alert.value;
@@ -855,9 +855,9 @@
             }
         }
         
-        async function deleteAlert(uuid) {
+        async function deleteAlert(id) {
             try {
-                const response = await fetch(`${baseUrl}/alerts/delete/${uuid}`);
+                const response = await fetch(`${baseUrl}/alerts/delete/${id}`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
