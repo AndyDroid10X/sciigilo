@@ -31,14 +31,18 @@ pub struct Body {
 #[serde(rename_all = "lowercase")]
 pub enum RequestType {
     #[default]
+    #[serde(alias = "GET", alias = "Get")]
     Get,
+    #[serde(alias = "POST", alias = "Post")]
     Post,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum BodyFormat {
+    #[serde(alias = "JSON", alias = "Json")]
     Json,
+    #[serde(alias = "X-WWW-Form-Urlencoded")]
     XWwwFormUrlEncoded,
 }
 
