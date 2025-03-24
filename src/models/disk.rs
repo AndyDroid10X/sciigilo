@@ -25,7 +25,7 @@ pub fn get_values() -> Vec<String> {
 
 impl DiskMetrics {
     pub fn new(total: u32, free: u32) -> DiskMetrics {
-        let used = if total > free { total - free } else { 0 };
+        let used = total.saturating_sub(free);
         let usage_percentage = if total > 0 {
             used as f32 / total as f32
         } else {
