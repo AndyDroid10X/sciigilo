@@ -92,13 +92,14 @@ impl AlertConfig {
 
     pub async fn remove_alert(&mut self, uuid: &str) {
         self.read_config().await;
-        if self
+        if !self
             .alerts
             .iter()
             .map(|a| a.id.to_string())
             .any(|id| id == uuid)
         {
             eprintln!("Alert with id {} not found", uuid);
+            println!("{:?}", self.alerts);
             return;
         }
         self.alerts.retain(|a| a.id.to_string() != uuid);

@@ -17,7 +17,7 @@ async fn create_alert(
 
 async fn delete_alert(
     State(mut config): State<AlertConfig>,
-    uuid: String,
+    axum::extract::Path(uuid): axum::extract::Path<String>,
 ) -> Json<Result<String, String>> {
     config.remove_alert(&uuid).await;
     Json(Ok(format!("Success")))
