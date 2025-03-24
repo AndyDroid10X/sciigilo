@@ -21,6 +21,7 @@ async fn create_db_file_if_not_exists(path: &str) -> Result<(), sqlx::Error> {
     if !system_path.exists() {
         OpenOptions::new()
             .create(true)
+            .truncate(false)
             .write(true)
             .open(path)
             .await
@@ -194,30 +195,16 @@ async fn get_disk_metric(pool: &SqlitePool) -> Result<MetricType, sqlx::Error> {
     )))
 }
 
-pub async fn get_cpu_since(
-    pool: &SqlitePool,
-    timestamp: i64,
-) -> Result<Vec<CpuMetrics>, sqlx::Error> {
-    let rows = sqlx::query(
-        r#"
-        SELECT usage_percentage, load_average_1m, load_average_5m, load_average_15m
-        FROM CpuMetrics
-        WHERE strftime('%s', timestamp) >= ?
-        "#,
+pub async fn get_cpu_average_since(pool: &SqlitePool, timestamp: i64) -> Result<f32, sqlx::Error> {
+    let row = sqlx::query(
+        "SELECT AVG(usage_percentage) as avg_usage FROM CpuMetrics WHERE strftime('%s', timestamp) >= ?"
     )
     .bind(timestamp)
-    .fetch_all(pool)
+    .fetch_optional(pool)
     .await?;
 
-    Ok(rows
-        .iter()
-        .map(|row| CpuMetrics {
-            usage_percentage: row.get("usage_percentage"),
-            load_average: [
-                row.get("load_average_1m"),
-                row.get("load_average_5m"),
-                row.get("load_average_15m"),
-            ],
-        })
-        .collect())
+    match row {
+        Some(r) => Ok(r.get::<Option<f32>, _>("avg_usage").unwrap_or(0.0)),
+        None => Ok(0.0),
+    }
 }

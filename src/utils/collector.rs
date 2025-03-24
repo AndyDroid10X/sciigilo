@@ -47,44 +47,15 @@ impl MetricsCollector {
         let diff_5m = timestamp - 300;
         let diff_15m = timestamp - 900;
 
-        let cpu_metrics_1m = db::get_cpu_since(&self.pool, diff_1m)
+        let load_average_1m = db::get_cpu_average_since(&self.pool, diff_1m)
             .await
-            .map_err(|e| e.to_string())?;
-        let cpu_metrics_5m = db::get_cpu_since(&self.pool, diff_5m)
+            .unwrap_or(0.0);
+        let load_average_5m = db::get_cpu_average_since(&self.pool, diff_5m)
             .await
-            .map_err(|e| e.to_string())?;
-        let cpu_metrics_15m = db::get_cpu_since(&self.pool, diff_15m)
+            .unwrap_or(0.0);
+        let load_average_15m = db::get_cpu_average_since(&self.pool, diff_15m)
             .await
-            .map_err(|e| e.to_string())?;
-        let load_average_1m = if !cpu_metrics_1m.is_empty() {
-            cpu_metrics_1m
-                .iter()
-                .map(|m| m.usage_percentage)
-                .sum::<f32>()
-                / cpu_metrics_1m.len() as f32
-        } else {
-            0.0
-        };
-
-        let load_average_5m = if !cpu_metrics_5m.is_empty() {
-            cpu_metrics_5m
-                .iter()
-                .map(|m| m.usage_percentage)
-                .sum::<f32>()
-                / cpu_metrics_5m.len() as f32
-        } else {
-            0.0
-        };
-
-        let load_average_15m = if !cpu_metrics_15m.is_empty() {
-            cpu_metrics_15m
-                .iter()
-                .map(|m| m.usage_percentage)
-                .sum::<f32>()
-                / cpu_metrics_15m.len() as f32
-        } else {
-            0.0
-        };
+            .unwrap_or(0.0);
         self.sysinfo_instance.refresh_cpu_usage();
         Ok(cpu::CpuMetrics::new(
             self.sysinfo_instance.global_cpu_usage(),
