@@ -52,6 +52,13 @@ impl AlertConfig {
     }
 
     pub async fn read_config(&mut self) {
+        if !fs::try_exists(Self::ALERT_CONFIG_FILE).await.unwrap_or(false) {
+            if let Err(e) = self.save().await {
+                eprintln!("Failed to create initial config file: {}", e);
+            }
+            return;
+        }
+
         let mut file = match File::open(Self::ALERT_CONFIG_FILE).await {
             Ok(f) => f,
             Err(e) => {
