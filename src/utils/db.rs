@@ -40,6 +40,15 @@ pub async fn init_db(pool: &SqlitePool) {
     } else {
         println!("Database initialized successfully.");
     }
+
+    let pool = pool.clone();
+
+    tokio::spawn(async move {
+        loop {
+            cleanup_metrics(&pool).await;
+            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+        }
+    });
 }
 
 fn get_init_query() -> &'static str {
@@ -206,5 +215,17 @@ pub async fn get_cpu_average_since(pool: &SqlitePool, timestamp: i64) -> Result<
     match row {
         Some(r) => Ok(r.get::<Option<f32>, _>("avg_usage").unwrap_or(0.0)),
         None => Ok(0.0),
+    }
+}
+
+
+pub async fn cleanup_metrics(pool: &SqlitePool) {
+    let query = r#"
+    DELETE FROM CpuMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-1 day');
+    DELETE FROM MemoryMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-1 day');
+    DELETE FROM DiskMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-1 day');
+    "#;
+    if let Err(e) = sqlx::query(query).execute(pool).await {
+        eprintln!("Error cleaning up old metrics: {:?}", e);
     }
 }
