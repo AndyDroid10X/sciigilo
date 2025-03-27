@@ -1,6 +1,11 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
+use super::{
+    alert::Logic,
+    metrics::{Field, Metric},
+};
+
 // **CPU Metrics**
 //   - Usage percentage per core
 //   - Load average (1min, 5min, 15min)
@@ -12,13 +17,41 @@ pub struct CpuMetrics {
     pub load_average: [f32; 3],
 }
 
-pub fn get_values() -> Vec<String> {
-    vec![
-        "usage_percentage".to_string(),
-        "load_average_1m".to_string(),
-        "load_average_5m".to_string(),
-        "load_average_15m".to_string(),
-    ]
+pub enum Fields {
+    UsagePercentage,
+    LoadAverage1m,
+    LoadAverage5m,
+    LoadAverage15m,
+}
+
+impl Field for Fields {
+    fn from_str(s: &str) -> Option<Fields> {
+        match s {
+            "usage_percentage" => Some(Fields::UsagePercentage),
+            "load_average_1m" => Some(Fields::LoadAverage1m),
+            "load_average_5m" => Some(Fields::LoadAverage5m),
+            "load_average_15m" => Some(Fields::LoadAverage15m),
+            _ => None,
+        }
+    }
+
+    fn get_values() -> Vec<String> {
+        vec![
+            "usage_percentage".to_string(),
+            "load_average_1m".to_string(),
+            "load_average_5m".to_string(),
+            "load_average_15m".to_string(),
+        ]
+    }
+
+    fn to_str(&self) -> &str {
+        match self {
+            Fields::UsagePercentage => "usage_percentage",
+            Fields::LoadAverage1m => "load_average_1m",
+            Fields::LoadAverage5m => "load_average_5m",
+            Fields::LoadAverage15m => "load_average_15m",
+        }
+    }
 }
 
 impl CpuMetrics {
@@ -26,6 +59,24 @@ impl CpuMetrics {
         CpuMetrics {
             usage_percentage,
             load_average,
+        }
+    }
+}
+
+impl Metric for CpuMetrics {
+    fn check<T: Field, U: PartialOrd + Into<f32>>(
+        &self,
+        threshold: U,
+        field: T,
+        logic: Logic,
+    ) -> bool {
+        let threshold: f32 = threshold.into();
+        match field.to_str() {
+            "usage_percentage" => logic.check(self.usage_percentage, threshold),
+            "load_average_1m" => logic.check(self.load_average[0], threshold),
+            "load_average_5m" => logic.check(self.load_average[1], threshold),
+            "load_average_15m" => logic.check(self.load_average[2], threshold),
+            _ => false,
         }
     }
 }

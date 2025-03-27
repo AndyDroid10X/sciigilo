@@ -30,3 +30,18 @@ pub enum Logic {
     Gte,
     Lte,
 }
+
+impl Logic {
+    pub fn check<T>(&self, value: T, threshold: T) -> bool
+    where
+        T: PartialOrd,
+    {
+        match self {
+            Logic::Eq => value == threshold,
+            Logic::Gt => value > threshold,
+            Logic::Lt => value < threshold,
+            Logic::Gte => value >= threshold,
+            Logic::Lte => value <= threshold,
+        }
+    }
+}

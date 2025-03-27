@@ -5,7 +5,7 @@ use sysinfo::System;
 use tokio::net::TcpListener;
 mod models;
 mod utils;
-use utils::{config, db};
+use utils::{config, db, watchtower};
 mod routes;
 
 #[tokio::main]
@@ -31,9 +31,16 @@ async fn main() {
         let mut collector = utils::collector::MetricsCollector::new(collector_pool);
         loop {
             collector.collect_metrics().await;
-            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+            tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
         }
     });
+
+    let watchtower_pool = pool.clone();
+
+    tokio::spawn(async move {
+        watchtower::watch(watchtower_pool).await;
+    });
+
 
     let app = Router::new()
         .route(

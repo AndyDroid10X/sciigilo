@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
+use super::metrics::{Field, Metric};
+
 // **Memory Metrics**
 //   - Total RAM
 //   - Available RAM
@@ -20,17 +22,57 @@ pub struct MemoryMetrics {
     pub swap_usage_percentage: f32,
 }
 
-pub fn get_values() -> Vec<String> {
-    vec![
-        "total".to_string(),
-        "free".to_string(),
-        "used".to_string(),
-        "usage_percentage".to_string(),
-        "swap_total".to_string(),
-        "swap_free".to_string(),
-        "swap_used".to_string(),
-        "swap_usage_percentage".to_string(),
-    ]
+pub enum Fields {
+    Total,
+    Free,
+    Used,
+    UsagePercentage,
+    SwapTotal,
+    SwapFree,
+    SwapUsed,
+    SwapUsagePercentage,
+}
+
+impl Field for Fields {
+    fn from_str(s: &str) -> Option<Fields> {
+        match s {
+            "total" => Some(Fields::Total),
+            "free" => Some(Fields::Free),
+            "used" => Some(Fields::Used),
+            "usage_percentage" => Some(Fields::UsagePercentage),
+            "swap_total" => Some(Fields::SwapTotal),
+            "swap_free" => Some(Fields::SwapFree),
+            "swap_used" => Some(Fields::SwapUsed),
+            "swap_usage_percentage" => Some(Fields::SwapUsagePercentage),
+            _ => None,
+        }
+    }
+
+    fn get_values() -> Vec<String> {
+        vec![
+            "total".to_string(),
+            "free".to_string(),
+            "used".to_string(),
+            "usage_percentage".to_string(),
+            "swap_total".to_string(),
+            "swap_free".to_string(),
+            "swap_used".to_string(),
+            "swap_usage_percentage".to_string(),
+        ]
+    }
+
+    fn to_str(&self) -> &str {
+        match self {
+            Fields::Total => "total",
+            Fields::Free => "free",
+            Fields::Used => "used",
+            Fields::UsagePercentage => "usage_percentage",
+            Fields::SwapTotal => "swap_total",
+            Fields::SwapFree => "swap_free",
+            Fields::SwapUsed => "swap_used",
+            Fields::SwapUsagePercentage => "swap_usage_percentage",
+        }
+    }
 }
 
 impl MemoryMetrics {
@@ -56,6 +98,27 @@ impl MemoryMetrics {
             swap_free,
             swap_used,
             swap_usage_percentage,
+        }
+    }
+}
+
+impl Metric for MemoryMetrics {
+    fn check<T: Field, U: PartialOrd + Into<f32>>(
+        &self,
+        threshold: U,
+        field: T,
+        logic: super::alert::Logic,
+    ) -> bool {
+        match field.to_str() {
+            "total" => logic.check(self.total, threshold.into() as u32),
+            "free" => logic.check(self.free, threshold.into() as u32),
+            "used" => logic.check(self.used, threshold.into() as u32),
+            "usage_percentage" => logic.check(self.usage_percentage, threshold.into()),
+            "swap_total" => logic.check(self.swap_total, threshold.into() as u32),
+            "swap_free" => logic.check(self.swap_free, threshold.into() as u32),
+            "swap_used" => logic.check(self.swap_used, threshold.into() as u32),
+            "swap_usage_percentage" => logic.check(self.swap_usage_percentage, threshold.into()),
+            _ => false,
         }
     }
 }
