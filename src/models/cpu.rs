@@ -79,6 +79,16 @@ impl Metric for CpuMetrics {
             _ => false,
         }
     }
+
+    fn get_value(&self, field: String) -> f32 {
+        match field.as_str() {
+            "usage_percentage" => self.usage_percentage,
+            "load_average_1m" => self.load_average[0],
+            "load_average_5m" => self.load_average[1],
+            "load_average_15m" => self.load_average[2],
+            _ => 0.0,
+        }
+    }
 }
 
 impl Display for CpuMetrics {

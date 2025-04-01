@@ -24,6 +24,8 @@ pub trait Metric {
         field: T,
         logic: super::alert::Logic,
     ) -> bool;
+
+    fn get_value(&self, field: String) -> f32;
 }
 
 impl MetricType {
@@ -43,6 +45,14 @@ impl MetricType {
             MetricType::Disk(disk) => {
                 disk.check(threshold, disk::Fields::from_str(&field.replace("disk_", "")).unwrap(), logic)
             }
+        }
+    }
+
+    pub fn get_value(&self, field: String) -> f32 {
+        match self {
+            MetricType::Cpu(cpu) => cpu.get_value(field),
+            MetricType::Memory(mem) => mem.get_value(field),
+            MetricType::Disk(disk) => disk.get_value(field),
         }
     }
 }

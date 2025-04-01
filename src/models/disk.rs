@@ -68,6 +68,16 @@ impl Metric for DiskMetrics {
             _ => false,
         }
     }
+
+    fn get_value(&self, field: String) -> f32 {
+        match field.as_str() {
+            "total" => self.total as f32,
+            "used" => self.used as f32,
+            "free" => self.free as f32,
+            "usage_percentage" => self.usage_percentage,
+            _ => 0.0,
+        }
+    }
 }
 
 impl DiskMetrics {
