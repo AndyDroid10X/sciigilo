@@ -5,16 +5,18 @@ use tokio::{
     io::AsyncReadExt,
 };
 
+
 pub fn load_env() {
     match dotenvy::dotenv() {
         Ok(_) => (),
         Err(e) => eprintln!("Failed to load .env file: {}", e),
     }
 }
-
+#[derive(Clone)]
 pub struct EnvConfig {
     pub db_file_path: String,
     pub port: u16,
+    pub alerts_file_path: String,
 }
 
 impl EnvConfig {
@@ -22,44 +24,52 @@ impl EnvConfig {
         EnvConfig {
             db_file_path: String::new(),
             port: 3000,
+            alerts_file_path: String::new(),
         }
     }
 
     pub fn read_config(&mut self) {
         load_env();
 
-        let db_path = env::var("DATABASE_URL").unwrap_or_else(|_| "metrics.db".to_string());
+        let db_path = env::var("DATABASE_URL").unwrap_or_else(|_| {
+            let config_dir = dirs::config_dir().expect("Failed to get config directory");
+            format!("{}/sciigilo/metrics.db", config_dir.display())
+        });
         let port = env::var("PORT")
             .ok()
             .and_then(|val| val.parse().ok())
             .unwrap_or(3000);
+        let alerts_path = env::var("ALERTS_FILE").unwrap_or_else(|_| {
+            let config_dir = dirs::config_dir().expect("Failed to get config directory");
+            format!("{}/sciigilo/alerts.json", config_dir.display())
+        });
 
         self.db_file_path = db_path;
         self.port = port;
+        self.alerts_file_path = alerts_path
     }
 }
 
 #[derive(Clone)]
 pub struct AlertConfig {
     alerts: Vec<Alert>,
+    file_path: String,
 }
 
 impl AlertConfig {
-    const ALERT_CONFIG_FILE: &str = "alerts.json";
-
-    pub fn new() -> AlertConfig {
-        AlertConfig { alerts: vec![] }
+    pub fn new(env: &EnvConfig) -> AlertConfig {
+        AlertConfig { alerts: vec![], file_path: env.alerts_file_path.clone() }
     }
 
     pub async fn read_config(&mut self) {
-        if !fs::try_exists(Self::ALERT_CONFIG_FILE).await.unwrap_or(false) {
+        if !fs::try_exists(&self.file_path).await.unwrap_or(false) {
             if let Err(e) = self.save().await {
                 eprintln!("Failed to create initial config file: {}", e);
             }
             return;
         }
 
-        let mut file = match File::open(Self::ALERT_CONFIG_FILE).await {
+        let mut file = match File::open(&self.file_path).await {
             Ok(f) => f,
             Err(e) => {
                 eprintln!("Failed to open config file: {}", e);
@@ -80,8 +90,13 @@ impl AlertConfig {
     }
 
     pub async fn save(&self) -> tokio::io::Result<()> {
+        if let Some(parent) = std::path::Path::new(&self.file_path).parent() {
+            if !parent.exists() {
+                fs::create_dir_all(parent).await?;
+            }
+        }
         let content = serde_json::to_string_pretty(&self.alerts).expect("Failed to save Json file");
-        fs::write(Self::ALERT_CONFIG_FILE, content).await
+        fs::write(&self.file_path, content).await
     }
 
     pub async fn get_alerts(&mut self) -> &Vec<Alert> {

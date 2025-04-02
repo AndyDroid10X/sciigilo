@@ -17,20 +17,29 @@ pub async fn connect(path: &str) -> Result<SqlitePool, sqlx::Error> {
 }
 
 async fn create_db_file_if_not_exists(path: &str) -> Result<(), sqlx::Error> {
-    let system_path = Path::new(path);
-    if !system_path.exists() {
-        OpenOptions::new()
-            .create(true)
-            .truncate(false)
-            .write(true)
-            .open(path)
-            .await
-            .map_err(|e| {
-                eprintln!("Failed to create database file: {:?}", e);
-                sqlx::Error::Io(e)
-            })?;
+    dbg!(path);
+    let db_path = Path::new(path);
+    let db_dir = db_path.parent().unwrap_or_else(|| Path::new("."));
+    match tokio::fs::create_dir_all(db_dir).await {
+        Ok(_) => {
+            if !db_path.exists() {
+                OpenOptions::new()
+                    .create(true)
+                    .write(true)
+                    .open(db_path)
+                    .await
+                    .map_err(|e| {
+                        eprintln!("Failed to create database file: {:?}", e);
+                        e
+                    })?;
+            }
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("Failed to create directory for database: {:?}", e);
+            Err(sqlx::Error::Io(e))
+        }
     }
-    Ok(())
 }
 
 pub async fn init_db(pool: &SqlitePool) {

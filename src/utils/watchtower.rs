@@ -1,19 +1,19 @@
 use std::collections::HashMap;
 use crate::models::{alert::Alert, metrics};
 
-use super::{config, db};
+use super::{config::{self, EnvConfig}, db};
 
-async fn get_alerts() -> Vec<Alert> {
-    let mut alerts = config::AlertConfig::new();
+async fn get_alerts(env: &EnvConfig) -> Vec<Alert> {
+    let mut alerts = config::AlertConfig::new(&env);
     alerts.read_config().await;
     alerts.get_alerts().await.clone()
 }
 
 
 
-pub async fn watch(pool: sqlx::SqlitePool) {
+pub async fn watch(pool: sqlx::SqlitePool, env: EnvConfig) {
     loop {
-        let alerts = get_alerts().await;
+        let alerts = get_alerts(&env).await;
         for alert in alerts {
             match metrics::get_metric_type_from_str(&alert.metric_id) {
                 Some(metric_type) => {

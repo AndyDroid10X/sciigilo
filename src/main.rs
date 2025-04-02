@@ -11,7 +11,7 @@ mod routes;
 #[tokio::main]
 async fn main() {
     let mut app_config = config::EnvConfig::new();
-    let mut alerts_config = config::AlertConfig::new();
+    let mut alerts_config = config::AlertConfig::new(&app_config);
     alerts_config.read_config().await;
     app_config.read_config();
 
@@ -36,9 +36,9 @@ async fn main() {
     });
 
     let watchtower_pool = pool.clone();
-
+    let watchtower_env = app_config.clone();
     tokio::spawn(async move {
-        watchtower::watch(watchtower_pool).await;
+        watchtower::watch(watchtower_pool, watchtower_env).await;
     });
 
 
