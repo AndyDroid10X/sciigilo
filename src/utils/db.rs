@@ -17,7 +17,6 @@ pub async fn connect(path: &str) -> Result<SqlitePool, sqlx::Error> {
 }
 
 async fn create_db_file_if_not_exists(path: &str) -> Result<(), sqlx::Error> {
-    dbg!(path);
     let db_path = Path::new(path);
     let db_dir = db_path.parent().unwrap_or_else(|| Path::new("."));
     match tokio::fs::create_dir_all(db_dir).await {

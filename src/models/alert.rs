@@ -6,6 +6,9 @@
 // | `alerts[].value`                 | Number                                   | Threshold value for triggering an alert. |
 // | `alerts[].request`               | Object                                   | HTTP request details for triggered alerts. |
 
+
+use std::fmt::Display;
+
 use super::request::Request;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -29,6 +32,28 @@ pub enum Logic {
     Lt,
     Gte,
     Lte,
+}
+
+impl Display for Logic {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Logic::Eq => write!(f, "=="),
+            Logic::Gt => write!(f, ">"),
+            Logic::Lt => write!(f, "<"),
+            Logic::Gte => write!(f, ">="),
+            Logic::Lte => write!(f, "<="),
+        }
+    }
+}
+
+impl Display for Alert {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Alert metric_id: {} {} {}, {}",
+            self.metric_id, self.logic, self.value, self.request
+        )
+    }
 }
 
 impl Logic {

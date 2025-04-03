@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use serde::{Deserialize, Serialize};
 
 /// Example JSON:
@@ -55,5 +57,21 @@ impl Default for Body {
 impl Body {
     pub fn new(format: BodyFormat, payload: String) -> Body {
         Body { format, payload }
+    }
+}
+
+impl Display for Request {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} request to {}",
+            self.request_type, self.url,
+        )
+    }
+}
+
+impl Display for RequestType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }

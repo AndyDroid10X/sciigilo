@@ -1,27 +1,8 @@
-use askama::Template;
-use axum::{Router, extract::Request, response::Html, routing::get};
+use axum::{Router, response::Html, routing::get};
 
-use crate::utils::config;
-
-#[derive(Template)]
-#[template(path = "index.html")]
-struct IndexTemplate {
-    url: String,
-}
-
-async fn index(request: Request) -> Html<String> {
-    let mut app_config = config::EnvConfig::new();
-
-    app_config.read_config();
-
-    let mut host = String::from("localhost");
-
-    if request.headers().contains_key("host") {
-        host = String::from(request.headers().get("host").unwrap().to_str().unwrap());
-    }
-
-    let template = IndexTemplate { url: host };
-    Html(template.render().unwrap())
+async fn index() -> Html<String> {
+    let html = include_str!("../../templates/index.html");
+    Html(html.to_string())
 }
 
 pub fn get_routes() -> Router {

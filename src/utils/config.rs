@@ -17,6 +17,7 @@ pub struct EnvConfig {
     pub db_file_path: String,
     pub port: u16,
     pub alerts_file_path: String,
+    pub log_file_path: String,
 }
 
 impl EnvConfig {
@@ -25,6 +26,7 @@ impl EnvConfig {
             db_file_path: String::new(),
             port: 3000,
             alerts_file_path: String::new(),
+            log_file_path: String::new(),
         }
     }
 
@@ -43,10 +45,15 @@ impl EnvConfig {
             let config_dir = dirs::config_dir().expect("Failed to get config directory");
             format!("{}/sciigilo/alerts.json", config_dir.display())
         });
+        let log_path = env::var("LOG_FILE").unwrap_or_else(|_| {
+            let config_dir = dirs::config_dir().expect("Failed to get config directory");
+            format!("{}/sciigilo/logs.txt", config_dir.display())
+        });
 
         self.db_file_path = db_path;
         self.port = port;
-        self.alerts_file_path = alerts_path
+        self.alerts_file_path = alerts_path;
+        self.log_file_path = log_path;
     }
 }
 

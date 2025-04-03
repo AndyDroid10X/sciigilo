@@ -193,7 +193,6 @@
             }
         }
 
-        
         .alerts-container {
             padding: 1rem 0;
         }
@@ -418,7 +417,6 @@
             font-style: italic;
         }
 
-        
         .format-selector {
             display: flex;
             border: 1px solid #ddd;
@@ -441,7 +439,6 @@
             color: white;
         }
 
-        
         .loading-spinner {
             display: inline-block;
             width: 1.5rem;
@@ -453,7 +450,6 @@
             margin-right: 0.5rem;
         }
 
-        
         @media (max-width: 768px) {
             .metrics-grid {
                 grid-template-columns: 1fr;
@@ -469,6 +465,82 @@
                 align-self: flex-end;
             }
         }
+
+
+        .logs-container {
+            padding: 1rem 0;
+        }
+
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .logs-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .logs-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .logs-viewer {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            max-height: 500px;
+        }
+
+        #logs-content {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            overflow-y: auto;
+            overflow-x: auto;
+            max-height: 480px;
+            margin: 0;
+            padding-right: 1rem;
+            white-space: pre;
+            word-break: normal;
+            word-wrap: normal;
+        }
+
+        .log-entry {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-entry-time {
+            color: #6c757d;
+            margin-right: 0.5rem;
+        }
+
+        .log-empty {
+            color: #6c757d;
+            font-style: italic;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        #logs-count {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            background-color: white;
+        }
     </style>
 </head>
 
@@ -481,6 +553,7 @@
         <div class="tabs">
             <div class="tab active" data-tab="metrics">Metrics</div>
             <div class="tab" data-tab="alerts">Alerts</div>
+            <div class="tab" data-tab="logs">Logs</div>
         </div>
 
         <div id="metrics-tab" class="tab-content active">
@@ -644,10 +717,30 @@
                 </div>
             </div>
         </div>
+
+        <div id="logs-tab" class="tab-content">
+            <div class="logs-container">
+                <div class="logs-header">
+                    <h2>Alert Execution Logs</h2>
+                    <div class="logs-actions">
+                        <button id="refresh-logs" class="btn btn-primary">Refresh</button>
+                        <select id="logs-count">
+                            <option value="10">Last 10</option>
+                            <option value="25">Last 25</option>
+                            <option value="50">Last 50</option>
+                            <option value="100">Last 100</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="logs-viewer">
+                    <pre id="logs-content">Loading logs...</pre>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const baseUrl = 'http://{{ url }}';
+        const baseUrl = location.origin;
 
         function setTabActive(tabName) {
             document.querySelectorAll('.tab').forEach(tab => {
@@ -755,11 +848,14 @@
 
                     if (tab.getAttribute('data-tab') === 'alerts') {
                         loadAlerts();
+                    } else if (tab.getAttribute('data-tab') === 'logs') {
+                        loadLogs();
                     }
                 });
             });
 
             initializeAlertsTab();
+            initializeLogsTab();
         });
 
         function initializeAlertsTab() {
@@ -1072,6 +1168,49 @@
             } catch (error) {
                 console.error('Error deleting alert:', error);
                 alert('Failed to delete alert. Please try again.');
+            }
+        }
+
+        function initializeLogsTab() {
+            const refreshButton = document.getElementById('refresh-logs');
+            const logsCountSelect = document.getElementById('logs-count');
+
+            refreshButton.addEventListener('click', () => {
+                loadLogs();
+            });
+
+            logsCountSelect.addEventListener('change', () => {
+                loadLogs();
+            });
+        }
+
+        async function loadLogs() {
+            const logsContent = document.getElementById('logs-content');
+            const logsCount = document.getElementById('logs-count').value;
+
+            logsContent.textContent = 'Loading logs...';
+
+            try {
+                const response = await fetch(`${baseUrl}/logs/get?n=${logsCount}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const logs = await response.json();
+
+                if (logs.length === 0) {
+                    logsContent.innerHTML = '<div class="log-empty">No logs available.</div>';
+                    return;
+                }
+
+                logsContent.textContent = logs.join('\n');
+
+
+                logsContent.scrollTop = logsContent.scrollHeight;
+
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                logsContent.innerHTML = '<div class="error">Failed to load logs. Please try again.</div>';
             }
         }
     </script>
