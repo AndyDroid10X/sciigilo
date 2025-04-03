@@ -6,7 +6,6 @@
 // | `alerts[].value`                 | Number                                   | Threshold value for triggering an alert. |
 // | `alerts[].request`               | Object                                   | HTTP request details for triggered alerts. |
 
-
 use std::fmt::Display;
 
 use super::request::Request;

@@ -36,15 +36,21 @@ impl MetricType {
         logic: super::alert::Logic,
     ) -> bool {
         match self {
-            MetricType::Cpu(cpu) => {
-                cpu.check(threshold, cpu::Fields::from_str(&field.replace("cpu_", "")).unwrap(), logic)
-            }
-            MetricType::Memory(mem) => {
-                mem.check(threshold, mem::Fields::from_str(&field.replace("mem_", "")).unwrap(), logic)
-            }
-            MetricType::Disk(disk) => {
-                disk.check(threshold, disk::Fields::from_str(&field.replace("disk_", "")).unwrap(), logic)
-            }
+            MetricType::Cpu(cpu) => cpu.check(
+                threshold,
+                cpu::Fields::from_str(&field.replace("cpu_", "")).unwrap(),
+                logic,
+            ),
+            MetricType::Memory(mem) => mem.check(
+                threshold,
+                mem::Fields::from_str(&field.replace("mem_", "")).unwrap(),
+                logic,
+            ),
+            MetricType::Disk(disk) => disk.check(
+                threshold,
+                disk::Fields::from_str(&field.replace("disk_", "")).unwrap(),
+                logic,
+            ),
         }
     }
 

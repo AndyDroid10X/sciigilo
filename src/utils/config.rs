@@ -5,7 +5,6 @@ use tokio::{
     io::AsyncReadExt,
 };
 
-
 pub fn load_env() {
     match dotenvy::dotenv() {
         Ok(_) => (),
@@ -65,7 +64,10 @@ pub struct AlertConfig {
 
 impl AlertConfig {
     pub fn new(env: &EnvConfig) -> AlertConfig {
-        AlertConfig { alerts: vec![], file_path: env.alerts_file_path.clone() }
+        AlertConfig {
+            alerts: vec![],
+            file_path: env.alerts_file_path.clone(),
+        }
     }
 
     pub async fn read_config(&mut self) {

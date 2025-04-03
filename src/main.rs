@@ -1,6 +1,6 @@
 #![forbid(unsafe_code)]
 
-use axum::{routing::get, Json, Router};
+use axum::{Json, Router, routing::get};
 use sysinfo::System;
 use tokio::net::TcpListener;
 mod models;
@@ -16,8 +16,7 @@ async fn main() {
     let mut alerts_config = config::AlertConfig::new(&app_config);
     alerts_config.read_config().await;
 
-    let logger = Logger::new(&app_config.log_file_path).unwrap() ;
-    
+    let logger = Logger::new(&app_config.log_file_path).unwrap();
 
     let pool = match db::connect(app_config.db_file_path.as_str()).await {
         Ok(pool) => pool,
@@ -47,7 +46,6 @@ async fn main() {
         wt.watch().await;
     });
 
-
     let app = Router::new()
         .route(
             "/health",
@@ -69,7 +67,6 @@ async fn main() {
         .nest("/logs", routes::logs::get_routes())
         .with_state(logger.clone())
         .merge(routes::index::get_routes());
-    
 
     let listener = TcpListener::bind(("0.0.0.0", app_config.port))
         .await

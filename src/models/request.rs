@@ -62,11 +62,7 @@ impl Body {
 
 impl Display for Request {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{} request to {}",
-            self.request_type, self.url,
-        )
+        write!(f, "{} request to {}", self.request_type, self.url,)
     }
 }
 

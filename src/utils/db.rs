@@ -226,7 +226,6 @@ pub async fn get_cpu_average_since(pool: &SqlitePool, timestamp: i64) -> Result<
     }
 }
 
-
 pub async fn cleanup_metrics(pool: &SqlitePool) {
     let query = r#"
     DELETE FROM CpuMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-1 day');
