@@ -3,20 +3,29 @@
 
 <head>
     <title>Sciigilo — System Monitoring</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --background-color: #f8f9fa;
+            --primary-light: #4895ef;
+            --primary-dark: #3a0ca3;
+            --secondary-color: #4cc9f0;
+            --accent-color: #f72585;
+            --background-color: #f8f9fd;
             --card-background: #ffffff;
-            --text-color: #333;
-            --border-radius: 8px;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
+            --text-color: #2b2d42;
+            --text-secondary: #6c757d;
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --container-padding: 1.5rem;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
+            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
             background-color: var(--background-color);
             color: var(--text-color);
             margin: 0;
@@ -25,40 +34,83 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 2rem auto;
-            padding: 0 1rem;
+            padding: 0 var(--container-padding);
         }
 
         header {
             display: flex;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
+            justify-content: space-between;
         }
 
         h1 {
             margin: 0;
             font-weight: 700;
-            color: var(--primary-color);
+            color: var(--primary-dark);
+            font-size: 2rem;
+            letter-spacing: -0.5px;
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -6px;
+            height: 3px;
+            width: 40px;
+            background: var(--accent-color);
+            border-radius: 3px;
         }
 
         .tabs {
             display: flex;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid #ddd;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            background-color: var(--background-color);
+            z-index: 10;
         }
 
         .tab {
-            padding: 0.75rem 1.5rem;
+            padding: 1rem 1.5rem;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
-            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
             transition: var(--transition);
+            color: var(--text-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab:hover {
+            color: var(--primary-color);
         }
 
         .tab.active {
-            border-bottom: 2px solid var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
             color: var(--primary-color);
+        }
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background: rgba(67, 97, 238, 0.1);
+            transition: height 0.3s ease;
+            z-index: -1;
+        }
+
+        .tab:hover::before {
+            height: 100%;
         }
 
         .tab-content {
@@ -67,72 +119,79 @@
 
         .tab-content.active {
             display: block;
-            animation: fadeIn 0.4s ease;
+            animation: fadeIn 0.5s ease;
         }
 
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 1.5rem;
         }
 
         .card {
             background: var(--card-background);
             border-radius: var(--border-radius);
-            padding: 1.5rem;
+            padding: 1.75rem;
             box-shadow: var(--shadow);
             transition: var(--transition);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-hover);
         }
 
         .card-title {
             display: flex;
             align-items: center;
-            margin-bottom: 1rem;
-            font-size: 1.2rem;
-            font-weight: 500;
-            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .card-icon {
-            margin-right: 0.5rem;
+            margin-right: 0.75rem;
             width: 24px;
             height: 24px;
+            color: var(--primary-color);
         }
 
         .card-content {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             line-height: 1.8;
         }
 
         .metric-item {
             display: flex;
             justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px dashed #eee;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.07);
         }
 
         .metric-item:last-child {
             border-bottom: none;
+            margin-bottom: 1rem;
         }
 
         .metric-label {
             font-weight: 500;
+            color: var(--text-secondary);
         }
 
         .metric-value {
-            font-family: monospace;
-            color: var(--secondary-color);
+            font-family: 'SF Mono', 'Cascadia Code', Menlo, monospace;
+            color: var(--primary-dark);
+            font-weight: 500;
         }
 
         .not-implemented {
             text-align: center;
             padding: 4rem 0;
-            color: #888;
+            color: var(--text-secondary);
             font-style: italic;
         }
 
@@ -141,7 +200,7 @@
         }
 
         .error {
-            color: #dc3545;
+            color: var(--accent-color);
             font-size: 0.9rem;
         }
 
@@ -202,50 +261,63 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .alerts-header h2 {
             margin: 0;
             font-size: 1.5rem;
-            color: var(--primary-color);
+            color: var(--primary-dark);
+            font-weight: 600;
         }
 
         .btn {
-            padding: 0.5rem 1rem;
+            padding: 0.65rem 1.25rem;
             border: none;
-            border-radius: var(--border-radius);
+            border-radius: var(--border-radius-sm);
             cursor: pointer;
-            font-weight: 500;
+            font-weight: 600;
             transition: var(--transition);
             position: relative;
             overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .btn-primary {
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
         }
 
         .btn-primary:hover {
-            background-color: var(--secondary-color);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
         .btn-secondary {
-            background-color: #e9ecef;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
             color: var(--text-color);
         }
 
         .btn-secondary:hover {
-            background-color: #dee2e6;
+            background: linear-gradient(135deg, #e9ecef, #dee2e6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .btn-danger {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, var(--accent-color), #dc3545);
             color: white;
         }
 
         .btn-danger:hover {
-            background-color: #c82333;
+            background: linear-gradient(135deg, #dc3545, var(--accent-color));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
         .btn:active {
@@ -279,18 +351,19 @@
         .alert-card {
             background: var(--card-background);
             border-radius: var(--border-radius);
-            padding: 1rem;
+            padding: 1.25rem;
             box-shadow: var(--shadow);
             display: flex;
             justify-content: space-between;
             align-items: center;
             animation: slideInRight 0.4s ease;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 4px solid var(--primary-color);
         }
 
         .alert-card:hover {
             transform: translateY(-3px) scale(1.01);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-hover);
         }
 
         .alert-info {
@@ -298,38 +371,45 @@
         }
 
         .alert-metric {
-            font-weight: 500;
-            color: var(--primary-color);
+            font-weight: 600;
+            color: var(--primary-dark);
             margin-bottom: 0.25rem;
+            font-size: 1.05rem;
         }
 
         .alert-condition {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--text-color);
+            margin-bottom: 0.5rem;
         }
 
         .alert-action {
             font-size: 0.85rem;
-            color: #6c757d;
+            color: var(--text-secondary);
             margin-top: 0.25rem;
         }
 
         .alert-controls {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.75rem;
         }
 
         .alert-btn {
             background: none;
-            border: none;
+            border: 1px solid rgba(0, 0, 0, 0.05);
             cursor: pointer;
-            padding: 0.25rem;
-            border-radius: var(--border-radius);
+            padding: 0.4rem;
+            border-radius: var(--border-radius-sm);
             transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .alert-btn:hover {
-            background-color: #f1f3f5;
+            background-color: var(--background-color);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .modal {
@@ -342,51 +422,60 @@
             height: 100%;
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
         }
 
         .modal-content {
             background-color: var(--card-background);
-            margin: 10% auto;
-            padding: 1.5rem;
+            margin: 8% auto;
+            padding: 2rem;
             border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-hover);
             width: 80%;
             max-width: 600px;
             animation: fadeIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             transform-origin: top center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .close-modal {
-            color: #aaa;
+            color: var(--text-secondary);
             float: right;
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             font-weight: bold;
             cursor: pointer;
+            line-height: 1;
+            transition: var(--transition);
         }
 
         .close-modal:hover {
             color: var(--text-color);
+            transform: rotate(90deg);
         }
 
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
             font-weight: 500;
+            color: var(--text-color);
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius);
+            padding: 0.75rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius-sm);
             font-family: inherit;
             transition: all 0.2s ease;
+            background-color: #f9fafc;
+            color: var(--text-color);
+            font-size: 0.95rem;
         }
 
         .form-group input:focus,
@@ -394,44 +483,52 @@
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+            background-color: white;
         }
 
         .form-actions {
             display: flex;
             justify-content: flex-end;
             gap: 1rem;
-            margin-top: 1.5rem;
+            margin-top: 2rem;
         }
 
         .loading-message {
             text-align: center;
-            padding: 2rem;
-            color: #6c757d;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(4px);
         }
 
         .no-alerts-message {
             text-align: center;
-            padding: 2rem;
-            color: #6c757d;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
             font-style: italic;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(4px);
         }
 
         .format-selector {
             display: flex;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius-sm);
             overflow: hidden;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
         }
 
         .format-option {
             flex: 1;
             text-align: center;
-            padding: 0.5rem;
-            background: #f1f3f5;
+            padding: 0.75rem;
+            background: #f9fafc;
             cursor: pointer;
             transition: all 0.2s ease;
+            font-weight: 500;
         }
 
         .format-option.active {
@@ -443,11 +540,108 @@
             display: inline-block;
             width: 1.5rem;
             height: 1.5rem;
-            border: 3px solid rgba(0, 0, 0, 0.1);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            border-top-color: var(--primary-color);
+            border-top-color: white;
             animation: spin 1s ease-in-out infinite;
             margin-right: 0.5rem;
+        }
+
+        .logs-container {
+            padding: 1rem 0;
+        }
+
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .logs-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .logs-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .logs-viewer {
+            background-color: #1e293b;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            max-height: 550px;
+            position: relative;
+        }
+
+        #logs-content {
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            overflow-y: auto;
+            overflow-x: auto;
+            max-height: 520px;
+            margin: 0;
+            padding-right: 1rem;
+            white-space: pre;
+            word-break: normal;
+            word-wrap: normal;
+            color: #e2e8f0;
+        }
+
+        .log-entry {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-entry-time {
+            color: #94a3b8;
+            margin-right: 0.75rem;
+        }
+
+        .log-empty {
+            color: #94a3b8;
+            font-style: italic;
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+        }
+
+        #logs-count {
+            padding: 0.65rem 1rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius-sm);
+            background-color: white;
+            font-weight: 500;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        #logs-count:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+
+        canvas {
+            margin-top: 1.5rem;
+            border-radius: var(--border-radius-sm);
         }
 
         @media (max-width: 768px) {
@@ -464,84 +658,122 @@
                 margin-top: 1rem;
                 align-self: flex-end;
             }
+
+            .container {
+                max-width: 100%;
+                margin: 1rem auto;
+                padding: 0 1rem;
+            }
+
+            .tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 5px;
+            }
+
+            .tab {
+                white-space: nowrap;
+                flex-shrink: 0;
+                padding: 0.75rem 1rem;
+            }
+
+            .card {
+                padding: 1.25rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+                padding: 1.5rem;
+            }
+
+            .alerts-header, .logs-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            #add-alert-btn, .logs-actions {
+                width: 100%;
+            }
+
+            .logs-actions {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            #refresh-logs, #logs-count {
+                flex: 1;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .form-actions button {
+                width: 100%;
+            }
+
+            .alert-card:hover {
+                transform: none;
+            }
+
+            canvas {
+                max-width: 100%;
+                height: auto;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 0.75rem 1rem;
+            }
+
+            .logs-viewer {
+                padding: 1rem;
+                max-height: 450px;
+            }
+
+            #logs-content {
+                max-height: 420px;
+                padding-right: 0.5rem;
+            }
         }
 
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
 
-        .logs-container {
-            padding: 1rem 0;
-        }
+            .card-title {
+                font-size: 1.1rem;
+            }
 
-        .logs-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
+            .metric-item {
+                font-size: 0.9rem;
+            }
 
-        .logs-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: var(--primary-color);
-        }
+            #logs-content {
+                font-size: 0.85rem;
+                max-height: 350px;
+            }
 
-        .logs-actions {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
+            .logs-viewer {
+                max-height: 380px;
+            }
 
-        .logs-viewer {
-            background-color: var(--card-background);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            overflow: hidden;
-            max-height: 500px;
-        }
+            .alert-metric {
+                font-size: 1rem;
+            }
 
-        #logs-content {
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            overflow-y: auto;
-            overflow-x: auto;
-            max-height: 480px;
-            margin: 0;
-            padding-right: 1rem;
-            white-space: pre;
-            word-break: normal;
-            word-wrap: normal;
-        }
-
-        .log-entry {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .log-entry:last-child {
-            border-bottom: none;
-        }
-
-        .log-entry-time {
-            color: #6c757d;
-            margin-right: 0.5rem;
-        }
-
-        .log-empty {
-            color: #6c757d;
-            font-style: italic;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        #logs-count {
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: var(--border-radius);
-            background-color: white;
+            .alert-condition, .alert-action {
+                font-size: 0.85rem;
+            }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -585,6 +817,7 @@
                             <div class="metric-label">Load (15m)</div>
                             <div class="metric-value" id="cpu-load-15">Loading...</div>
                         </div>
+                        <canvas id="cpu-usage-chart" width="100" height="100"></canvas>
                     </div>
                 </div>
 
@@ -616,6 +849,7 @@
                             <div class="metric-label">Usage</div>
                             <div class="metric-value" id="memory-usage">Loading...</div>
                         </div>
+                        <canvas id="memory-usage-chart" width="100" height="100"></canvas>
                     </div>
                 </div>
 
@@ -645,6 +879,7 @@
                             <div class="metric-label">Usage</div>
                             <div class="metric-value" id="disk-usage">Loading...</div>
                         </div>
+                        <canvas id="disk-usage-chart" width="100" height="100"></canvas>
                     </div>
                 </div>
             </div>
@@ -742,6 +977,8 @@
     <script>
         const baseUrl = location.origin;
 
+        const chartInstances = {};
+
         function setTabActive(tabName) {
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
@@ -752,6 +989,58 @@
 
             document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
             document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        function renderPieChart(canvasId, used, free) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+
+            
+            if (chartInstances[canvasId]) {
+                chartInstances[canvasId].destroy();
+            }
+
+            
+            chartInstances[canvasId] = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Used', 'Free'],
+                    datasets: [{
+                        data: [used, free],
+                        backgroundColor: ['#4361ee', '#e9ecef'],
+                        borderColor: ['#3a0ca3', '#dee2e6'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#2b2d42',
+                            bodyColor: '#2b2d42',
+                            borderColor: 'rgba(0, 0, 0, 0.1)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            usePointStyle: true,
+                            boxPadding: 6
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
         }
 
         async function fetchMetric(metric) {
@@ -792,21 +1081,24 @@
                 switch (metric) {
                     case 'cpu':
                         elements.cpu.usage.textContent = `${metricData.usage_percentage.toFixed(1)}%`;
-                        elements.cpu.load1.textContent = metricData.load_average[0].toFixed(2);
-                        elements.cpu.load5.textContent = metricData.load_average[1].toFixed(2);
-                        elements.cpu.load15.textContent = metricData.load_average[2].toFixed(2);
+                        elements.cpu.load1.textContent = `${metricData.load_average[0].toFixed(2)}%`;
+                        elements.cpu.load5.textContent = `${metricData.load_average[1].toFixed(2)}%`;
+                        elements.cpu.load15.textContent = `${metricData.load_average[2].toFixed(2)}%`;
+                        renderPieChart('cpu-usage-chart', metricData.usage_percentage, 100 - metricData.usage_percentage);
                         break;
                     case 'memory':
                         elements.memory.total.textContent = formatBytes(metricData.total);
                         elements.memory.used.textContent = formatBytes(metricData.used);
                         elements.memory.free.textContent = formatBytes(metricData.free);
                         elements.memory.usage.textContent = `${metricData.usage_percentage.toFixed(1)}%`;
+                        renderPieChart('memory-usage-chart', metricData.used, metricData.free);
                         break;
                     case 'disk':
                         elements.disk.total.textContent = formatBytes(metricData.total);
                         elements.disk.used.textContent = formatBytes(metricData.used);
                         elements.disk.free.textContent = formatBytes(metricData.free);
                         elements.disk.usage.textContent = `${metricData.usage_percentage.toFixed(1)}%`;
+                        renderPieChart('disk-usage-chart', metricData.used, metricData.free);
                         break;
                 }
             } catch (error) {
