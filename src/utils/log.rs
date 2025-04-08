@@ -11,9 +11,13 @@ pub struct Logger {
 
 impl Logger {
     pub fn new(file_path: &str) -> Result<Logger, std::io::Error> {
+        if !std::path::Path::new(file_path).exists() {
+            std::fs::File::create(file_path)?;
+        }
         Ok(Logger {
             file_path: file_path.to_string(),
         })
+        
     }
 
     pub fn log(&mut self, alert: Alert) -> Result<(), std::io::Error> {
