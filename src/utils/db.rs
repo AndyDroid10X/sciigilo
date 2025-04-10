@@ -41,7 +41,7 @@ async fn create_db_file_if_not_exists(path: &str) -> Result<(), sqlx::Error> {
     }
 }
 
-pub async fn init_db(pool: &SqlitePool) {
+pub async fn init_db(pool: &SqlitePool, retention_period: u32) {
     let query = get_init_query();
     if let Err(e) = sqlx::query(query).execute(pool).await {
         eprintln!("Error initializing database: {:?}", e);
@@ -53,8 +53,8 @@ pub async fn init_db(pool: &SqlitePool) {
 
     tokio::spawn(async move {
         loop {
-            cleanup_metrics(&pool).await;
-            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+            cleanup_metrics(&pool, retention_period).await;
+            tokio::time::sleep(tokio::time::Duration::from_secs(86400)).await;
         }
     });
 }
@@ -226,13 +226,13 @@ pub async fn get_cpu_average_since(pool: &SqlitePool, timestamp: i64) -> Result<
     }
 }
 
-pub async fn cleanup_metrics(pool: &SqlitePool) {
-    let query = r#"
-    DELETE FROM CpuMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-1 day');
-    DELETE FROM MemoryMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-1 day');
-    DELETE FROM DiskMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-1 day');
-    "#;
-    if let Err(e) = sqlx::query(query).execute(pool).await {
+pub async fn cleanup_metrics(pool: &SqlitePool, retention_period: u32) {
+    let query = format!(r#"
+    DELETE FROM CpuMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-{retention_period} day');
+    DELETE FROM MemoryMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-{retention_period} day');
+    DELETE FROM DiskMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-{retention_period} day');
+    "#);
+    if let Err(e) = sqlx::query(query.as_str()).execute(pool).await {
         eprintln!("Error cleaning up old metrics: {:?}", e);
     }
 }

@@ -26,7 +26,7 @@ async fn main() {
         }
     };
 
-    db::init_db(&pool).await;
+    db::init_db(&pool, app_config.retention_period).await;
 
     let collector_pool = pool.clone();
 

@@ -17,6 +17,7 @@ pub struct EnvConfig {
     pub port: u16,
     pub alerts_file_path: String,
     pub log_file_path: String,
+    pub retention_period: u32,
 }
 
 impl EnvConfig {
@@ -26,15 +27,23 @@ impl EnvConfig {
             port: 3000,
             alerts_file_path: String::new(),
             log_file_path: String::new(),
+            retention_period: 1,
         }
     }
 
     pub fn read_config(&mut self) {
         load_env();
 
+        let is_docker = std::fs::read_to_string("/proc/1/cgroup")
+        .map(|s| s.contains("docker") || s.contains("container"))
+        .unwrap_or(false);
+
         let db_path = env::var("DATABASE_URL").unwrap_or_else(|_| {
             let config_dir = dirs::config_dir().expect("Failed to get config directory");
-            format!("{}/sciigilo/metrics.db", config_dir.display())
+            match is_docker {
+                true => format!("/data/sciigilo.db"),
+                false => format!("{}/sciigilo/db.sqlite", config_dir.display()),                
+            }
         });
         let port = env::var("PORT")
             .ok()
@@ -42,17 +51,33 @@ impl EnvConfig {
             .unwrap_or(3000);
         let alerts_path = env::var("ALERTS_FILE").unwrap_or_else(|_| {
             let config_dir = dirs::config_dir().expect("Failed to get config directory");
-            format!("{}/sciigilo/alerts.json", config_dir.display())
+            match is_docker {
+                true => format!("/data/alerts.json"),
+                false => format!("{}/sciigilo/alerts.json", config_dir.display()),                
+            }
         });
         let log_path = env::var("LOG_FILE").unwrap_or_else(|_| {
             let config_dir = dirs::config_dir().expect("Failed to get config directory");
-            format!("{}/sciigilo/logs.txt", config_dir.display())
+            match is_docker {
+                true => format!("/data/sciigilo.log"),
+                false => format!("{}/sciigilo/sciigilo.log", config_dir.display()),                
+            }
         });
+
+        let mut retention_period = env::var("RETENTION_PERIOD")
+            .ok()
+            .and_then(|val| val.parse().ok())
+            .unwrap_or(1);
+        if retention_period < 1 {
+            eprintln!("Retention period must be at least 1 day, setting it to 1 day");
+            retention_period = 1;
+        }
 
         self.db_file_path = db_path;
         self.port = port;
         self.alerts_file_path = alerts_path;
         self.log_file_path = log_path;
+        self.retention_period = retention_period;
     }
 }
 
