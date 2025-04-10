@@ -17,7 +17,6 @@ impl Logger {
         Ok(Logger {
             file_path: file_path.to_string(),
         })
-        
     }
 
     pub fn log(&mut self, alert: Alert) -> Result<(), std::io::Error> {

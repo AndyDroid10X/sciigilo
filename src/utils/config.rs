@@ -35,14 +35,14 @@ impl EnvConfig {
         load_env();
 
         let is_docker = std::fs::read_to_string("/proc/1/cgroup")
-        .map(|s| s.contains("docker") || s.contains("container"))
-        .unwrap_or(false);
+            .map(|s| s.contains("docker") || s.contains("container"))
+            .unwrap_or(false);
 
         let db_path = env::var("DATABASE_URL").unwrap_or_else(|_| {
             let config_dir = dirs::config_dir().expect("Failed to get config directory");
             match is_docker {
                 true => format!("/data/sciigilo.db"),
-                false => format!("{}/sciigilo/db.sqlite", config_dir.display()),                
+                false => format!("{}/sciigilo/db.sqlite", config_dir.display()),
             }
         });
         let port = env::var("PORT")
@@ -53,14 +53,14 @@ impl EnvConfig {
             let config_dir = dirs::config_dir().expect("Failed to get config directory");
             match is_docker {
                 true => format!("/data/alerts.json"),
-                false => format!("{}/sciigilo/alerts.json", config_dir.display()),                
+                false => format!("{}/sciigilo/alerts.json", config_dir.display()),
             }
         });
         let log_path = env::var("LOG_FILE").unwrap_or_else(|_| {
             let config_dir = dirs::config_dir().expect("Failed to get config directory");
             match is_docker {
                 true => format!("/data/sciigilo.log"),
-                false => format!("{}/sciigilo/sciigilo.log", config_dir.display()),                
+                false => format!("{}/sciigilo/sciigilo.log", config_dir.display()),
             }
         });
 

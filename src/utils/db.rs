@@ -227,11 +227,13 @@ pub async fn get_cpu_average_since(pool: &SqlitePool, timestamp: i64) -> Result<
 }
 
 pub async fn cleanup_metrics(pool: &SqlitePool, retention_period: u32) {
-    let query = format!(r#"
+    let query = format!(
+        r#"
     DELETE FROM CpuMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-{retention_period} day');
     DELETE FROM MemoryMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-{retention_period} day');
     DELETE FROM DiskMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-{retention_period} day');
-    "#);
+    "#
+    );
     if let Err(e) = sqlx::query(query.as_str()).execute(pool).await {
         eprintln!("Error cleaning up old metrics: {:?}", e);
     }
