@@ -20,7 +20,7 @@ async fn delete_alert(
     axum::extract::Path(uuid): axum::extract::Path<String>,
 ) -> Json<Result<String, String>> {
     config.remove_alert(&uuid).await;
-    Json(Ok(format!("Success")))
+    Json(Ok("Success".to_string()))
 }
 
 async fn update_alert(

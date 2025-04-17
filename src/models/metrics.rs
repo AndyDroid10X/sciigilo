@@ -89,24 +89,15 @@ pub fn get_metric_type_from_str(metric_id: &str) -> Option<MetricType> {
         match metric_id {
             metric_id if metric_id.starts_with("cpu") => {
                 let field = metric_id.trim_start_matches("cpu_");
-                match cpu::Fields::from_str(field) {
-                    Some(_) => Some(MetricType::Cpu(cpu::CpuMetrics::default())),
-                    None => None,
-                }
+                cpu::Fields::from_str(field).map(|_| MetricType::Cpu(cpu::CpuMetrics::default()))
             }
             metric_id if metric_id.starts_with("mem") => {
                 let field = metric_id.trim_start_matches("mem_");
-                match mem::Fields::from_str(field) {
-                    Some(_) => Some(MetricType::Memory(mem::MemoryMetrics::default())),
-                    None => None,
-                }
+                mem::Fields::from_str(field).map(|_| MetricType::Memory(mem::MemoryMetrics::default()))
             }
             metric_id if metric_id.starts_with("disk") => {
                 let field = metric_id.trim_start_matches("disk_");
-                match disk::Fields::from_str(field) {
-                    Some(_) => Some(MetricType::Disk(disk::DiskMetrics::default())),
-                    None => None,
-                }
+                disk::Fields::from_str(field).map(|_| MetricType::Disk(disk::DiskMetrics::default()))
             }
             _ => None,
         }
