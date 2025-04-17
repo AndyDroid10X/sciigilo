@@ -1,5 +1,7 @@
 #![forbid(unsafe_code)]
 
+use std::sync::Arc;
+
 use axum::{Json, Router, routing::get};
 use sysinfo::System;
 use tokio::net::TcpListener;
@@ -20,7 +22,7 @@ async fn main() {
     let logger = Logger::new(&app_config.log_file_path).unwrap();
 
     let pool = match db::connect(app_config.db_file_path.as_str()).await {
-        Ok(pool) => pool,
+        Ok(pool) => Arc::new(pool),
         Err(e) => {
             eprintln!("Failed to connect to database: {:?}", e);
             return;
@@ -29,20 +31,19 @@ async fn main() {
 
     db::init_db(&pool, app_config.retention_period).await;
 
-    let collector_pool = pool.clone();
+    let collector_db = pool.clone();
 
     tokio::spawn(async move {
-        let mut collector = utils::collector::MetricsCollector::new(collector_pool);
+        let mut collector = utils::collector::MetricsCollector::new(collector_db);
         loop {
             collector.collect_metrics().await;
             tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
         }
     });
 
-    let wt_pool = pool.clone();
     let wt_env = app_config.clone();
 
-    let mut wt = Watchtower::new(wt_pool, wt_env, logger.clone());
+    let mut wt = Watchtower::new(pool.clone(), wt_env, logger.clone());
     tokio::spawn(async move {
         wt.watch().await;
     });
@@ -76,7 +77,7 @@ async fn main() {
             }),
         )
         .nest("/metrics", routes::metrics::get_routes())
-        .with_state(pool)
+        .with_state(pool.clone())
         .nest("/alerts", routes::alerts::get_routes())
         .with_state(alerts_config)
         .nest("/logs", routes::logs::get_routes())

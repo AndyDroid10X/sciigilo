@@ -2,14 +2,15 @@ use crate::models::cpu::CpuMetrics;
 use crate::models::disk::DiskMetrics;
 use crate::models::mem::MemoryMetrics;
 use crate::models::metrics::MetricType;
-use sqlx::{Row, SqlitePool};
-use std::path::Path;
+use sqlx::{sqlite::SqlitePoolOptions, Row, SqlitePool};
+use std::{path::Path, sync::Arc};
 use tokio::fs::OpenOptions;
 
 pub async fn connect(path: &str) -> Result<SqlitePool, sqlx::Error> {
     create_db_file_if_not_exists(path).await?;
     let sqlite_url = format!("sqlite://{}", path);
     println!("Connecting to database: {}", sqlite_url);
+    
     SqlitePool::connect(sqlite_url.as_str()).await.map_err(|e| {
         eprintln!("Failed to connect to database: {:?}", e);
         e
@@ -18,7 +19,7 @@ pub async fn connect(path: &str) -> Result<SqlitePool, sqlx::Error> {
 
 async fn create_db_file_if_not_exists(path: &str) -> Result<(), sqlx::Error> {
     let db_path = Path::new(path);
-    let db_dir = db_path.parent().unwrap_or_else(|| Path::new("."));
+    let db_dir = db_path.parent().unwrap_or(Path::new("."));
     match tokio::fs::create_dir_all(db_dir).await {
         Ok(_) => {
             if !db_path.exists() {
@@ -41,9 +42,9 @@ async fn create_db_file_if_not_exists(path: &str) -> Result<(), sqlx::Error> {
     }
 }
 
-pub async fn init_db(pool: &SqlitePool, retention_period: u32) {
+pub async fn init_db(pool: &Arc<SqlitePool>, retention_period: u32) {
     let query = get_init_query();
-    if let Err(e) = sqlx::query(query).execute(pool).await {
+    if let Err(e) = sqlx::query(query).execute(&**pool).await {
         eprintln!("Error initializing database: {:?}", e);
     } else {
         println!("Database initialized successfully.");
@@ -252,7 +253,7 @@ pub async fn get_historical_cpu_metrics(
     println!("Query for historical CPU metrics: Start={}, End={}", start_time, end_time);
     dbg!(rows.len());
     
-    let mut metrics = Vec::new();
+    let mut metrics = Vec::with_capacity(rows.len());
     for row in rows {
         let timestamp: String = row.get("formatted_time");
         let usage_percentage: f32 = row.get("usage_percentage");
@@ -283,7 +284,7 @@ pub async fn get_historical_memory_metrics(
     .fetch_all(pool)
     .await?;
 
-    let mut metrics = Vec::new();
+    let mut metrics = Vec::with_capacity(rows.len());
     for row in rows {
         let timestamp: String = row.get("formatted_time");
         let total_memory: u32 = row.get("total_memory");

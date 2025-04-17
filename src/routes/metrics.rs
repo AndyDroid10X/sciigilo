@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::models::{mem::MemoryMetrics, metrics::MetricType};
 use crate::utils::db;
 use axum::extract::Query;
@@ -10,7 +12,7 @@ struct MetricHistory {
     end_time: Option<i64>,
 }
 
-pub fn get_routes() -> Router<SqlitePool> {
+pub fn get_routes() -> Router<Arc<SqlitePool>> {
     Router::new()
         .route("/cpu", get(get_last_cpu_metrics))
         .route("/cpu/history", get(cpu_history))
@@ -19,23 +21,23 @@ pub fn get_routes() -> Router<SqlitePool> {
         .route("/disk", get(get_last_disk_metrics))
 }
 
-async fn get_last_cpu_metrics(State(pool): State<SqlitePool>) -> Json<MetricType> {
+async fn get_last_cpu_metrics(State(pool): State<Arc<SqlitePool>>) -> Json<MetricType> {
     let metric = db::get_metric(&pool, MetricType::Cpu(Default::default())).await;
     Json(metric)
 }
 
-async fn get_last_memory_metrics(State(pool): State<SqlitePool>) -> Json<MetricType> {
+async fn get_last_memory_metrics(State(pool): State<Arc<SqlitePool>>) -> Json<MetricType> {
     let metric = db::get_metric(&pool, MetricType::Memory(Default::default())).await;
     Json(metric)
 }
 
-async fn get_last_disk_metrics(State(pool): State<SqlitePool>) -> Json<MetricType> {
+async fn get_last_disk_metrics(State(pool): State<Arc<SqlitePool>>) -> Json<MetricType> {
     let metric = db::get_metric(&pool, MetricType::Disk(Default::default())).await;
     Json(metric)
 }
 
 async fn cpu_history(
-    State(pool): State<SqlitePool>,
+    State(pool): State<Arc<SqlitePool>>,
     params: Query<MetricHistory>,
 ) -> Json<Vec<(String, f32)>> {
     let start_time = params.start_time.unwrap_or(0);
@@ -47,7 +49,7 @@ async fn cpu_history(
 }
 
 async fn memory_history(
-    State(pool): State<SqlitePool>,
+    State(pool): State<Arc<SqlitePool>>,
     params: Query<MetricHistory>,
 ) -> Json<Vec<(String, MemoryMetrics)>> {
     let start_time = params.start_time.unwrap_or(0);

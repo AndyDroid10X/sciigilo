@@ -1,4 +1,4 @@
-use std::time;
+use std::{sync::Arc, time};
 
 use sqlx::SqlitePool;
 
@@ -7,13 +7,13 @@ use crate::models::{cpu, disk, mem, metrics::MetricType};
 use super::db;
 
 pub struct MetricsCollector {
-    pool: SqlitePool,
+    pool: Arc<SqlitePool>,
     sysinfo_instance: sysinfo::System,
     disks_instance: sysinfo::Disks,
 }
 
 impl MetricsCollector {
-    pub fn new(pool: SqlitePool) -> MetricsCollector {
+    pub fn new(pool: Arc<SqlitePool>) -> MetricsCollector {
         MetricsCollector {
             pool,
             sysinfo_instance: sysinfo::System::new(),

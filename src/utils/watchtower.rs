@@ -1,5 +1,7 @@
+use sqlx::SqlitePool;
+
 use crate::models::{alert::Alert, metrics};
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use super::{
     config::{self, EnvConfig},
@@ -8,13 +10,13 @@ use super::{
 };
 
 pub struct Watchtower {
-    pool: sqlx::SqlitePool,
+    pool: Arc<SqlitePool>,
     env: EnvConfig,
     logger: Logger,
 }
 
 impl Watchtower {
-    pub fn new(pool: sqlx::SqlitePool, env: EnvConfig, logger: Logger) -> Self {
+    pub fn new(pool: Arc<SqlitePool>, env: EnvConfig, logger: Logger) -> Self {
         Watchtower { pool, env, logger }
     }
 
