@@ -7,6 +7,7 @@ mod models;
 mod utils;
 use utils::{config, db, log::Logger, watchtower::Watchtower};
 mod routes;
+use tower_http::cors::{Any, CorsLayer};
 
 #[tokio::main]
 async fn main() {
@@ -46,6 +47,20 @@ async fn main() {
         wt.watch().await;
     });
 
+    let cors = if app_config.domain.is_some() {
+        CorsLayer::new()
+            .allow_origin(app_config.domain.as_ref().unwrap().parse::<axum::http::HeaderValue>().unwrap())
+            .allow_methods(Any)
+            .allow_headers(Any)
+    } else {
+        CorsLayer::new()
+            .allow_origin(Any)
+            .allow_methods(Any)
+            .allow_headers(Any)
+    };
+
+
+
     let app = Router::new()
         .route(
             "/health",
@@ -66,7 +81,8 @@ async fn main() {
         .with_state(alerts_config)
         .nest("/logs", routes::logs::get_routes())
         .with_state(logger.clone())
-        .merge(routes::index::get_routes());
+        .merge(routes::index::get_routes())
+        .layer(cors);
 
     let listener = TcpListener::bind(("0.0.0.0", app_config.port))
         .await

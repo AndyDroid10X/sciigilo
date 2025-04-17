@@ -18,6 +18,7 @@ pub struct EnvConfig {
     pub alerts_file_path: String,
     pub log_file_path: String,
     pub retention_period: u32,
+    pub domain: Option<String>,
 }
 
 impl EnvConfig {
@@ -28,6 +29,7 @@ impl EnvConfig {
             alerts_file_path: String::new(),
             log_file_path: String::new(),
             retention_period: 1,
+            domain: None,
         }
     }
 
@@ -73,11 +75,13 @@ impl EnvConfig {
             retention_period = 1;
         }
 
+        let origin = env::var("ORIGIN").ok();
         self.db_file_path = db_path;
         self.port = port;
         self.alerts_file_path = alerts_path;
         self.log_file_path = log_path;
         self.retention_period = retention_period;
+        self.domain = origin;
     }
 }
 
