@@ -226,6 +226,78 @@ pub async fn get_cpu_average_since(pool: &SqlitePool, timestamp: i64) -> Result<
     }
 }
 
+pub async fn get_historical_cpu_metrics(
+    pool: &SqlitePool,
+    start_time: i64,
+    mut end_time: i64,
+) -> Result<Vec<(String, f32)>, sqlx::Error> {
+    if end_time == 0 {
+        let now = chrono::Utc::now().timestamp();
+        end_time = now;
+    }
+
+    dbg!(start_time, end_time);
+    let rows = sqlx::query(
+        r#"
+        SELECT datetime(timestamp) as formatted_time, usage_percentage
+        FROM CpuMetrics
+        WHERE timestamp >= datetime(?, 'unixepoch') AND timestamp <= datetime(?, 'unixepoch')
+        ORDER BY timestamp ASC
+        "#,
+    )
+    .bind(start_time)
+    .bind(end_time)
+    .fetch_all(pool)
+    .await?;
+    println!("Query for historical CPU metrics: Start={}, End={}", start_time, end_time);
+    dbg!(rows.len());
+    
+    let mut metrics = Vec::new();
+    for row in rows {
+        let timestamp: String = row.get("formatted_time");
+        let usage_percentage: f32 = row.get("usage_percentage");
+        metrics.push((timestamp, usage_percentage));
+    }
+    Ok(metrics)
+}
+
+pub async fn get_historical_memory_metrics(
+    pool: &SqlitePool,
+    start_time: i64,
+    mut end_time: i64,
+) -> Result<Vec<(String, MemoryMetrics)>, sqlx::Error> {
+    if end_time == 0 {
+        let now = chrono::Utc::now().timestamp();
+        end_time = now;
+    }
+    let rows = sqlx::query(
+        r#"
+        SELECT datetime(timestamp) as formatted_time, total_memory, used_memory, total_swap, used_swap
+        FROM MemoryMetrics
+        WHERE timestamp >= datetime(?, 'unixepoch') AND timestamp <= datetime(?, 'unixepoch')
+        ORDER BY timestamp ASC
+        "#,
+    )
+    .bind(start_time)
+    .bind(end_time)
+    .fetch_all(pool)
+    .await?;
+
+    let mut metrics = Vec::new();
+    for row in rows {
+        let timestamp: String = row.get("formatted_time");
+        let total_memory: u32 = row.get("total_memory");
+        let used_memory: u32 = row.get("used_memory");
+        let total_swap: u32 = row.get("total_swap");
+        let used_swap: u32 = row.get("used_swap");
+        metrics.push((
+            timestamp,
+            MemoryMetrics::new(total_memory, used_memory, total_swap, used_swap),
+        ));
+    }
+    Ok(metrics)
+}
+
 pub async fn cleanup_metrics(pool: &SqlitePool, retention_period: u32) {
     let query = format!(
         r#"

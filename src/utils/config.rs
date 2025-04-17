@@ -41,7 +41,7 @@ impl EnvConfig {
         let db_path = env::var("DATABASE_URL").unwrap_or_else(|_| {
             let config_dir = dirs::config_dir().expect("Failed to get config directory");
             match is_docker {
-                true => format!("/data/sciigilo.db"),
+                true => "/data/sciigilo.db".to_string(),
                 false => format!("{}/sciigilo/db.sqlite", config_dir.display()),
             }
         });
@@ -52,14 +52,14 @@ impl EnvConfig {
         let alerts_path = env::var("ALERTS_FILE").unwrap_or_else(|_| {
             let config_dir = dirs::config_dir().expect("Failed to get config directory");
             match is_docker {
-                true => format!("/data/alerts.json"),
+                true => "/data/alerts.json".to_string(),
                 false => format!("{}/sciigilo/alerts.json", config_dir.display()),
             }
         });
         let log_path = env::var("LOG_FILE").unwrap_or_else(|_| {
             let config_dir = dirs::config_dir().expect("Failed to get config directory");
             match is_docker {
-                true => format!("/data/sciigilo.log"),
+                true => "/data/sciigilo.log".to_string(),
                 false => format!("{}/sciigilo/sciigilo.log", config_dir.display()),
             }
         });

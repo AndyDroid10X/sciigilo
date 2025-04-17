@@ -740,6 +740,31 @@
                 max-height: 420px;
                 padding-right: 0.5rem;
             }
+
+            .historical-tabs {
+                padding-bottom: 0.25rem;
+            }
+
+            .historical-tab {
+                white-space: nowrap;
+                flex-shrink: 0;
+                padding: 0.5rem 1rem;
+            }
+
+            .historical-card {
+                padding: 1.25rem;
+            }
+
+            .time-range-selector {
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            .time-range-btn {
+                flex: 1;
+                text-align: center;
+                padding: 0.5rem 0.25rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -771,6 +796,137 @@
             .alert-condition, .alert-action {
                 font-size: 0.85rem;
             }
+        }
+
+        /* Historical charts section styles */
+        .historical-charts {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .historical-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .historical-tab {
+            padding: 0.75rem 1.25rem;
+            background-color: var(--card-background);
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .historical-tab:hover {
+            background-color: var(--background-color);
+            transform: translateY(-2px);
+        }
+
+        .historical-tab.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .historical-tab-content {
+            display: none;
+        }
+
+        .historical-tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .historical-card {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 1.75rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* Chart container with fixed height */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .time-range-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .time-range-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--border-radius-sm);
+            background: var(--card-background);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+            position: relative;
+            overflow: hidden;
+            min-width: 3rem;
+            text-align: center;
+        }
+        
+        .time-range-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            border-color: rgba(67, 97, 238, 0.2);
+            color: var(--primary-color);
+        }
+        
+        .time-range-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
+        }
+        
+        .time-range-btn:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+        
+        .time-range-btn:hover:before {
+            width: 150%;
+            height: 150%;
+        }
+        
+        .time-range-btn:active {
+            transform: translateY(0) scale(0.97);
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -880,6 +1036,67 @@
                             <div class="metric-value" id="disk-usage">Loading...</div>
                         </div>
                         <canvas id="disk-usage-chart" width="100" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Historical charts section -->
+            <div class="historical-charts">
+                <h2 class="section-title">Historical Data</h2>
+                <div class="tabs historical-tabs">
+                    <div class="historical-tab active" data-historicaltab="cpu-history">CPU Usage</div>
+                    <div class="historical-tab" data-historicaltab="memory-history">Memory Usage</div>
+                </div>
+                
+                <div class="historical-tab-content active" id="cpu-history-tab">
+                    <div class="historical-card">
+                        <div class="card-title">
+                            <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 20V10"></path>
+                                <path d="M12 20V4"></path>
+                                <path d="M6 20v-6"></path>
+                            </svg>
+                            CPU Usage History
+                        </div>
+                        <div class="card-content">
+                            <div class="time-range-selector">
+                                <button class="time-range-btn" data-range="15m">15m</button>
+                                <button class="time-range-btn active" data-range="1h">1h</button>
+                                <button class="time-range-btn" data-range="3h">3h</button>
+                                <button class="time-range-btn" data-range="12h">12h</button>
+                                <button class="time-range-btn" data-range="24h">24h</button>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="cpu-history-chart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="historical-tab-content" id="memory-history-tab">
+                    <div class="historical-card">
+                        <div class="card-title">
+                            <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                <path d="M6 12h12"></path>
+                                <path d="M8 8h.01"></path>
+                                <path d="M8 16h.01"></path>
+                            </svg>
+                            Memory Usage History
+                        </div>
+                        <div class="card-content">
+                            <div class="time-range-selector">
+                                <button class="time-range-btn active" data-range="1h">1h</button>
+                                <button class="time-range-btn" data-range="3h">3h</button>
+                                <button class="time-range-btn" data-range="12h">12h</button>
+                                <button class="time-range-btn" data-range="24h">24h</button>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="memory-history-chart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1131,6 +1348,9 @@
             updateAllMetrics();
             setInterval(updateAllMetrics, 5000);
 
+            // Initialize the historical charts
+            initializeHistoricalCharts();
+
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', () => {
                     setTabActive(tab.getAttribute('data-tab'));
@@ -1146,6 +1366,317 @@
             initializeAlertsTab();
             initializeLogsTab();
         });
+
+        // Historical chart functionality
+        function initializeHistoricalCharts() {
+            // Initialize CPU and Memory historical charts with 1 hour data by default
+            fetchHistoricalData('cpu', '1h');
+            fetchHistoricalData('memory', '1h');
+
+            // Set up historical tabs
+            document.querySelectorAll('.historical-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-historicaltab');
+                    
+                    // Remove active class from all historical tabs
+                    document.querySelectorAll('.historical-tab').forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+                    
+                    // Hide all historical tab content
+                    document.querySelectorAll('.historical-tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Show the selected tab content
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+
+            // Set up time range buttons for CPU chart
+            document.querySelectorAll('#cpu-history-tab .time-range-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#cpu-history-tab .time-range-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    fetchHistoricalData('cpu', btn.getAttribute('data-range'));
+                });
+            });
+
+            // Set up time range buttons for Memory chart
+            document.querySelectorAll('#memory-history-tab .time-range-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#memory-history-tab .time-range-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    fetchHistoricalData('memory', btn.getAttribute('data-range'));
+                });
+            });
+        }
+
+        async function fetchHistoricalData(metricType, timeRange) {
+            const now = Math.floor(Date.now() / 1000);
+            let startTime;
+            
+            // Calculate start time based on time range
+            switch(timeRange) {
+                case '15m':
+                    startTime = now - 15 * 60;
+                    break;
+                case '1h':
+                    startTime = now - 60 * 60;
+                    break;
+                case '3h':
+                    startTime = now - 3 * 60 * 60;
+                    break;
+                case '12h':
+                    startTime = now - 12 * 60 * 60;
+                    break;
+                case '24h':
+                    startTime = now - 24 * 60 * 60;
+                    break;
+                default:
+                    startTime = now - 60 * 60; // Default to 1 hour
+            }
+            
+            try {
+                const response = await fetch(`${baseUrl}/metrics/${metricType}/history?start_time=${startTime}&end_time=${now}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                if (metricType === 'cpu') {
+                    renderCpuHistoryChart(data);
+                } else if (metricType === 'memory') {
+                    renderMemoryHistoryChart(data);
+                }
+            } catch (error) {
+                console.error(`Error fetching ${metricType} history:`, error);
+                const chartCanvas = document.getElementById(`${metricType}-history-chart`);
+                const ctx = chartCanvas.getContext('2d');
+                ctx.font = '16px Inter';
+                ctx.fillStyle = '#f72585';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Failed to load ${metricType} history data`, chartCanvas.width / 2, chartCanvas.height / 2);
+            }
+        }
+
+        function renderCpuHistoryChart(data) {
+            const ctx = document.getElementById('cpu-history-chart').getContext('2d');
+            
+            // Prepare the data for Chart.js
+            const labels = data.map(item => {
+                const timestamp = new Date(item[0]);
+                return timestamp.toLocaleTimeString();
+            });
+            
+            const values = data.map(item => item[1]);
+            
+            // Destroy existing chart if it exists
+            if (chartInstances['cpu-history-chart']) {
+                chartInstances['cpu-history-chart'].destroy();
+            }
+            
+            // Create a new chart
+            chartInstances['cpu-history-chart'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'CPU Usage %',
+                        data: values,
+                        borderColor: '#4361ee',
+                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 1,
+                        pointHoverRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#2b2d42',
+                            bodyColor: '#2b2d42',
+                            borderColor: 'rgba(0, 0, 0, 0.1)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            usePointStyle: true,
+                            boxPadding: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    return `CPU: ${context.parsed.y.toFixed(1)}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                maxTicksLimit: 10
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderMemoryHistoryChart(data) {
+            const ctx = document.getElementById('memory-history-chart').getContext('2d');
+            
+            // Prepare the data for Chart.js
+            const labels = data.map(item => {
+                const timestamp = new Date(item[0]);
+                return timestamp.toLocaleTimeString();
+            });
+            
+            const usedValues = data.map(item => {
+                // Convert bytes to GB for better readability
+                return item[1].used / (1024);
+            });
+            
+            const totalValues = data.map(item => {
+                return item[1].total / (1024);
+            });
+            
+            const usagePercentage = data.map(item => {
+                return item[1].usage_percentage;
+            });
+            
+            // Destroy existing chart if it exists
+            if (chartInstances['memory-history-chart']) {
+                chartInstances['memory-history-chart'].destroy();
+            }
+            
+            // Create a new chart
+            chartInstances['memory-history-chart'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Used Memory (GB)',
+                            data: usedValues,
+                            borderColor: '#4361ee',
+                            backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 1,
+                            pointHoverRadius: 2,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Usage %',
+                            data: usagePercentage,
+                            borderColor: '#f72585',
+                            backgroundColor: 'rgba(247, 37, 133, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#2b2d42',
+                            bodyColor: '#2b2d42',
+                            borderColor: 'rgba(0, 0, 0, 0.1)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            usePointStyle: true,
+                            boxPadding: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.label === 'Used Memory (GB)') {
+                                        return `Memory: ${context.parsed.y.toFixed(2)} GB`;
+                                    } else {
+                                        return `Usage: ${context.parsed.y.toFixed(1)}%`;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                maxTicksLimit: 10
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'GB'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            title: {
+                                display: true,
+                                text: '%'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
         function initializeAlertsTab() {
             const addAlertBtn = document.getElementById('add-alert-btn');
