@@ -2,7 +2,7 @@ use crate::models::cpu::CpuMetrics;
 use crate::models::disk::DiskMetrics;
 use crate::models::mem::MemoryMetrics;
 use crate::models::metrics::MetricType;
-use sqlx::{sqlite::SqlitePoolOptions, Row, SqlitePool};
+use sqlx::{Row, SqlitePool};
 use std::{path::Path, sync::Arc};
 use tokio::fs::OpenOptions;
 
@@ -10,7 +10,7 @@ pub async fn connect(path: &str) -> Result<SqlitePool, sqlx::Error> {
     create_db_file_if_not_exists(path).await?;
     let sqlite_url = format!("sqlite://{}", path);
     println!("Connecting to database: {}", sqlite_url);
-    
+
     SqlitePool::connect(sqlite_url.as_str()).await.map_err(|e| {
         eprintln!("Failed to connect to database: {:?}", e);
         e
@@ -237,7 +237,6 @@ pub async fn get_historical_cpu_metrics(
         end_time = now;
     }
 
-    dbg!(start_time, end_time);
     let rows = sqlx::query(
         r#"
         SELECT datetime(timestamp) as formatted_time, usage_percentage
@@ -250,9 +249,11 @@ pub async fn get_historical_cpu_metrics(
     .bind(end_time)
     .fetch_all(pool)
     .await?;
-    println!("Query for historical CPU metrics: Start={}, End={}", start_time, end_time);
-    dbg!(rows.len());
-    
+    println!(
+        "Query for historical CPU metrics: Start={}, End={}",
+        start_time, end_time
+    );
+
     let mut metrics = Vec::with_capacity(rows.len());
     for row in rows {
         let timestamp: String = row.get("formatted_time");

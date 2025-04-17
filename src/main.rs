@@ -50,7 +50,14 @@ async fn main() {
 
     let cors = if app_config.domain.is_some() {
         CorsLayer::new()
-            .allow_origin(app_config.domain.as_ref().unwrap().parse::<axum::http::HeaderValue>().unwrap())
+            .allow_origin(
+                app_config
+                    .domain
+                    .as_ref()
+                    .unwrap()
+                    .parse::<axum::http::HeaderValue>()
+                    .unwrap(),
+            )
             .allow_methods(Any)
             .allow_headers(Any)
     } else {
@@ -59,8 +66,6 @@ async fn main() {
             .allow_methods(Any)
             .allow_headers(Any)
     };
-
-
 
     let app = Router::new()
         .route(

@@ -93,11 +93,13 @@ pub fn get_metric_type_from_str(metric_id: &str) -> Option<MetricType> {
             }
             metric_id if metric_id.starts_with("mem") => {
                 let field = metric_id.trim_start_matches("mem_");
-                mem::Fields::from_str(field).map(|_| MetricType::Memory(mem::MemoryMetrics::default()))
+                mem::Fields::from_str(field)
+                    .map(|_| MetricType::Memory(mem::MemoryMetrics::default()))
             }
             metric_id if metric_id.starts_with("disk") => {
                 let field = metric_id.trim_start_matches("disk_");
-                disk::Fields::from_str(field).map(|_| MetricType::Disk(disk::DiskMetrics::default()))
+                disk::Fields::from_str(field)
+                    .map(|_| MetricType::Disk(disk::DiskMetrics::default()))
             }
             _ => None,
         }
