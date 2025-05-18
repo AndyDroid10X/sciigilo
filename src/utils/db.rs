@@ -2,7 +2,7 @@ use crate::models::cpu::CpuMetrics;
 use crate::models::disk::DiskMetrics;
 use crate::models::mem::MemoryMetrics;
 use crate::models::metrics::MetricType;
-use sqlx::{Row, SqlitePool};
+use sqlx::{Row, SqlitePool, pool};
 use std::{path::Path, sync::Arc};
 use tokio::fs::OpenOptions;
 
@@ -11,10 +11,18 @@ pub async fn connect(path: &str) -> Result<SqlitePool, sqlx::Error> {
     let sqlite_url = format!("sqlite://{}", path);
     println!("Connecting to database: {}", sqlite_url);
 
-    SqlitePool::connect(sqlite_url.as_str()).await.map_err(|e| {
-        eprintln!("Failed to connect to database: {:?}", e);
-        e
-    })
+    let pool = SqlitePool::connect(sqlite_url.as_str()).await?;
+    sqlx::query("PRAGMA page_size = 1024")
+        .execute(&pool)
+        .await?;
+    sqlx::query("PRAGMA cache_size = -2000")
+        .execute(&pool)
+        .await?;
+    sqlx::query("PRAGMA temp_store = FILE")
+        .execute(&pool)
+        .await?;
+
+    Ok(pool)
 }
 
 async fn create_db_file_if_not_exists(path: &str) -> Result<(), sqlx::Error> {
@@ -62,28 +70,32 @@ pub async fn init_db(pool: &Arc<SqlitePool>, retention_period: u32) {
 
 fn get_init_query() -> &'static str {
     r#"
-    CREATE TABLE IF NOT EXISTS CpuMetrics (
-        timestamp DATETIME PRIMARY KEY DEFAULT CURRENT_TIMESTAMP,
-        usage_percentage REAL NOT NULL,
-        load_average_1m REAL NOT NULL,
-        load_average_5m REAL NOT NULL,
-        load_average_15m REAL NOT NULL
-    );
+        CREATE TABLE IF NOT EXISTS CpuMetrics (
+            timestamp DATETIME PRIMARY KEY DEFAULT CURRENT_TIMESTAMP,
+            usage_percentage REAL NOT NULL,
+            load_average_1m REAL NOT NULL,
+            load_average_5m REAL NOT NULL,
+            load_average_15m REAL NOT NULL
+        );
 
-    CREATE TABLE IF NOT EXISTS MemoryMetrics (
-        timestamp DATETIME PRIMARY KEY DEFAULT CURRENT_TIMESTAMP,
-        total_memory INTEGER NOT NULL,
-        used_memory INTEGER NOT NULL,
-        total_swap INTEGER NOT NULL,
-        used_swap INTEGER NOT NULL
-    );
+        CREATE TABLE IF NOT EXISTS MemoryMetrics (
+            timestamp DATETIME PRIMARY KEY DEFAULT CURRENT_TIMESTAMP,
+            total_memory INTEGER NOT NULL,
+            used_memory INTEGER NOT NULL,
+            total_swap INTEGER NOT NULL,
+            used_swap INTEGER NOT NULL
+        );
 
-    CREATE TABLE IF NOT EXISTS DiskMetrics (
-        timestamp DATETIME PRIMARY KEY DEFAULT CURRENT_TIMESTAMP,
-        available_space INTEGER NOT NULL,
-        total_space INTEGER NOT NULL
-    );
-    "#
+        CREATE TABLE IF NOT EXISTS DiskMetrics (
+            timestamp DATETIME PRIMARY KEY DEFAULT CURRENT_TIMESTAMP,
+            available_space INTEGER NOT NULL,
+            total_space INTEGER NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_cpu_timestamp ON CpuMetrics(timestamp);
+        CREATE INDEX IF NOT EXISTS idx_memory_timestamp ON MemoryMetrics(timestamp);
+        CREATE INDEX IF NOT EXISTS idx_disk_timestamp ON DiskMetrics(timestamp);
+        "#
 }
 
 pub async fn insert_metrics(pool: &SqlitePool, metric: MetricType) -> Result<(), sqlx::Error> {
@@ -96,18 +108,18 @@ pub async fn insert_metrics(pool: &SqlitePool, metric: MetricType) -> Result<(),
 
 async fn insert_cpu_metrics(pool: &SqlitePool, cpu_metrics: CpuMetrics) -> Result<(), sqlx::Error> {
     sqlx::query(
-        r#"
-        INSERT INTO CpuMetrics (usage_percentage, load_average_1m, load_average_5m, load_average_15m)
-        VALUES (?, ?, ?, ?)
-        "#
-    )
-    .bind(cpu_metrics.usage_percentage)
-    .bind(cpu_metrics.load_average[0])
-    .bind(cpu_metrics.load_average[1])
-    .bind(cpu_metrics.load_average[2])
-    .execute(pool)
-    .await
-    .map(|_| ())
+            r#"
+            INSERT INTO CpuMetrics (usage_percentage, load_average_1m, load_average_5m, load_average_15m)
+            VALUES (?, ?, ?, ?)
+            "#
+        )
+        .bind(cpu_metrics.usage_percentage)
+        .bind(cpu_metrics.load_average[0])
+        .bind(cpu_metrics.load_average[1])
+        .bind(cpu_metrics.load_average[2])
+        .execute(pool)
+        .await
+        .map(|_| ())
 }
 
 async fn insert_memory_metrics(
@@ -116,9 +128,9 @@ async fn insert_memory_metrics(
 ) -> Result<(), sqlx::Error> {
     sqlx::query(
         r#"
-        INSERT INTO MemoryMetrics (total_memory, used_memory, total_swap, used_swap)
-        VALUES (?, ?, ?, ?)
-        "#,
+            INSERT INTO MemoryMetrics (total_memory, used_memory, total_swap, used_swap)
+            VALUES (?, ?, ?, ?)
+            "#,
     )
     .bind(memory_metrics.total as i64)
     .bind(memory_metrics.used as i64)
@@ -135,9 +147,9 @@ async fn insert_disk_metrics(
 ) -> Result<(), sqlx::Error> {
     sqlx::query(
         r#"
-        INSERT INTO DiskMetrics (total_space, available_space)
-        VALUES (?, ?)
-        "#,
+            INSERT INTO DiskMetrics (total_space, available_space)
+            VALUES (?, ?)
+            "#,
     )
     .bind(disk_metrics.total)
     .bind(disk_metrics.free)
@@ -157,11 +169,11 @@ pub async fn get_metric(pool: &SqlitePool, metric_type: MetricType) -> MetricTyp
 async fn get_cpu_metric(pool: &SqlitePool) -> Result<MetricType, sqlx::Error> {
     let row = sqlx::query(
         r#"
-        SELECT usage_percentage, load_average_1m, load_average_5m, load_average_15m
-        FROM CpuMetrics
-        ORDER BY timestamp DESC
-        LIMIT 1
-        "#,
+            SELECT usage_percentage, load_average_1m, load_average_5m, load_average_15m
+            FROM CpuMetrics
+            ORDER BY timestamp DESC
+            LIMIT 1
+            "#,
     )
     .fetch_one(pool)
     .await?;
@@ -179,11 +191,11 @@ async fn get_cpu_metric(pool: &SqlitePool) -> Result<MetricType, sqlx::Error> {
 async fn get_memory_metric(pool: &SqlitePool) -> Result<MetricType, sqlx::Error> {
     let row = sqlx::query(
         r#"
-        SELECT total_memory, used_memory, total_swap, used_swap
-        FROM MemoryMetrics
-        ORDER BY timestamp DESC
-        LIMIT 1
-        "#,
+            SELECT total_memory, used_memory, total_swap, used_swap
+            FROM MemoryMetrics
+            ORDER BY timestamp DESC
+            LIMIT 1
+            "#,
     )
     .fetch_one(pool)
     .await?;
@@ -199,11 +211,11 @@ async fn get_memory_metric(pool: &SqlitePool) -> Result<MetricType, sqlx::Error>
 async fn get_disk_metric(pool: &SqlitePool) -> Result<MetricType, sqlx::Error> {
     let row = sqlx::query(
         r#"
-        SELECT available_space, total_space
-        FROM DiskMetrics
-        ORDER BY timestamp DESC
-        LIMIT 1
-        "#,
+            SELECT available_space, total_space
+            FROM DiskMetrics
+            ORDER BY timestamp DESC
+            LIMIT 1
+            "#,
     )
     .fetch_one(pool)
     .await?;
@@ -215,11 +227,11 @@ async fn get_disk_metric(pool: &SqlitePool) -> Result<MetricType, sqlx::Error> {
 
 pub async fn get_cpu_average_since(pool: &SqlitePool, timestamp: i64) -> Result<f32, sqlx::Error> {
     let row = sqlx::query(
-        "SELECT AVG(usage_percentage) as avg_usage FROM CpuMetrics WHERE strftime('%s', timestamp) >= ?"
-    )
-    .bind(timestamp)
-    .fetch_optional(pool)
-    .await?;
+            "SELECT AVG(usage_percentage) as avg_usage FROM CpuMetrics WHERE strftime('%s', timestamp) >= ?"
+        )
+        .bind(timestamp)
+        .fetch_optional(pool)
+        .await?;
 
     match row {
         Some(r) => Ok(r.get::<Option<f32>, _>("avg_usage").unwrap_or(0.0)),
@@ -239,20 +251,19 @@ pub async fn get_historical_cpu_metrics(
 
     let rows = sqlx::query(
         r#"
-        SELECT datetime(timestamp) as formatted_time, usage_percentage
-        FROM CpuMetrics
-        WHERE timestamp >= datetime(?, 'unixepoch') AND timestamp <= datetime(?, 'unixepoch')
-        ORDER BY timestamp ASC
-        "#,
+            SELECT 
+                strftime('%Y-%m-%d %H:%M:00', timestamp) as formatted_time, 
+                AVG(usage_percentage) as usage_percentage
+            FROM CpuMetrics
+            WHERE timestamp >= datetime(?, 'unixepoch') AND timestamp <= datetime(?, 'unixepoch')
+            GROUP BY formatted_time
+            ORDER BY formatted_time ASC
+            "#,
     )
     .bind(start_time)
     .bind(end_time)
     .fetch_all(pool)
     .await?;
-    println!(
-        "Query for historical CPU metrics: Start={}, End={}",
-        start_time, end_time
-    );
 
     let mut metrics = Vec::with_capacity(rows.len());
     for row in rows {
@@ -267,46 +278,48 @@ pub async fn get_historical_memory_metrics(
     pool: &SqlitePool,
     start_time: i64,
     mut end_time: i64,
-) -> Result<Vec<(String, MemoryMetrics)>, sqlx::Error> {
+) -> Result<Vec<(String, u32, u32)>, sqlx::Error> {
     if end_time == 0 {
         let now = chrono::Utc::now().timestamp();
         end_time = now;
     }
     let rows = sqlx::query(
         r#"
-        SELECT datetime(timestamp) as formatted_time, total_memory, used_memory, total_swap, used_swap
-        FROM MemoryMetrics
-        WHERE timestamp >= datetime(?, 'unixepoch') AND timestamp <= datetime(?, 'unixepoch')
-        ORDER BY timestamp ASC
-        "#,
+            SELECT 
+                strftime('%Y-%m-%d %H:%M:00', timestamp) as formatted_time, 
+                CAST(AVG(used_memory) AS INTEGER) as used_memory_avg,
+                CAST(AVG(total_memory) AS INTEGER) as total_memory_avg
+            FROM MemoryMetrics
+            WHERE timestamp >= datetime(?, 'unixepoch') AND timestamp <= datetime(?, 'unixepoch')
+            GROUP BY formatted_time
+            ORDER BY formatted_time ASC
+            "#,
     )
     .bind(start_time)
     .bind(end_time)
     .fetch_all(pool)
     .await?;
 
-    let mut metrics = Vec::with_capacity(rows.len());
-    for row in rows {
-        let timestamp: String = row.get("formatted_time");
-        let total_memory: u32 = row.get("total_memory");
-        let used_memory: u32 = row.get("used_memory");
-        let total_swap: u32 = row.get("total_swap");
-        let used_swap: u32 = row.get("used_swap");
-        metrics.push((
-            timestamp,
-            MemoryMetrics::new(total_memory, used_memory, total_swap, used_swap),
-        ));
-    }
+    let metrics: Vec<(String, u32, u32)> = rows
+        .iter()
+        .map(|row| {
+            let timestamp: String = row.get("formatted_time");
+            let used_memory: u32 = row.get("used_memory_avg");
+            let total_memory: u32 = row.get("total_memory_avg");
+            (timestamp, used_memory, total_memory)
+        })
+        .collect();
+
     Ok(metrics)
 }
 
 pub async fn cleanup_metrics(pool: &SqlitePool, retention_period: u32) {
     let query = format!(
         r#"
-    DELETE FROM CpuMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-{retention_period} day');
-    DELETE FROM MemoryMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-{retention_period} day');
-    DELETE FROM DiskMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-{retention_period} day');
-    "#
+        DELETE FROM CpuMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-{retention_period} day');
+        DELETE FROM MemoryMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-{retention_period} day');
+        DELETE FROM DiskMetrics WHERE strftime('%s', timestamp) < strftime('%s', 'now', '-{retention_period} day');
+        "#
     );
     if let Err(e) = sqlx::query(query.as_str()).execute(pool).await {
         eprintln!("Error cleaning up old metrics: {:?}", e);

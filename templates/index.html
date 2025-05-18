@@ -1555,15 +1555,15 @@
             
             const usedValues = data.map(item => {
                 // Convert bytes to GB for better readability
-                return item[1].used / (1024);
+                return item[1] / (1024);
             });
             
             const totalValues = data.map(item => {
-                return item[1].total / (1024);
+                return item[2] / (1024);
             });
             
             const usagePercentage = data.map(item => {
-                return item[1].usage_percentage;
+                return (item[1] / item[2]) * 100;
             });
             
             // Destroy existing chart if it exists

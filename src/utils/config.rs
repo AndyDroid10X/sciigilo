@@ -44,7 +44,7 @@ impl EnvConfig {
             let config_dir = dirs::config_dir().expect("Failed to get config directory");
             match is_docker {
                 true => "/data/sciigilo.db".to_string(),
-                false => format!("{}/sciigilo/db.sqlite", config_dir.display()),
+                false => format!("{}/sciigilo/metrics.db", config_dir.display()),
             }
         });
         let port = env::var("PORT")

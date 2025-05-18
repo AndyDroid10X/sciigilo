@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::models::{mem::MemoryMetrics, metrics::MetricType};
+use crate::models::metrics::MetricType;
 use crate::utils::db;
 use axum::extract::Query;
 use axum::{Router, extract::State, response::Json, routing::get};
@@ -51,7 +51,7 @@ async fn cpu_history(
 async fn memory_history(
     State(pool): State<Arc<SqlitePool>>,
     params: Query<MetricHistory>,
-) -> Json<Vec<(String, MemoryMetrics)>> {
+) -> Json<Vec<(String, u32, u32)>> {
     let start_time = params.start_time.unwrap_or(0);
     let end_time = params.end_time.unwrap_or(0);
     let rows = db::get_historical_memory_metrics(&pool, start_time, end_time)
